@@ -39,8 +39,15 @@ class LoginManager {
         try {
             const response = await api.login(email, password);
 
-            // SAFELY FALLBACK: Check if it has a .data property, otherwise use the response directly
+            if (!response) {
+                throw new Error('The server returned an empty login response. Please try again.');
+            }
+
+            // The backend returns the login payload inside its data property.
             const responseData = response.data || response;
+            if (!responseData.access_token || !responseData.user) {
+                throw new Error('The server returned an invalid login response.');
+            }
 
             // Save tokens securely using the cleaned data object variables
             localStorage.setItem('access_token', responseData.access_token);

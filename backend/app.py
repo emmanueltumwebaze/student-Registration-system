@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
             # Modify these placeholder variables to match your exact User model column strings:
             master_admin = User(
-                email='admin@university.edu',
+                email='admin_email',
                 password=generate_password_hash('Admin123'), # Choose your password here
                 role='admin',
                 first_name='System',
