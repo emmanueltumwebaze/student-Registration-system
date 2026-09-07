@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Student Attendance System</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+    <!-- Header/Navigation -->
+    <header>
+        <nav class="container">
+            <div class="logo">📚 Attendance System</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="AdminDashboard.selectTab('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('departments')">Departments</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('programs')">Programs</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('courses')">Courses</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('students')">Students</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('lecturers')">Lecturers</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('assignments')">Assignments</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('users')">Users</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('reports')">Reports</a></li>
+                <li><a href="#" onclick="AdminDashboard.selectTab('analytics')">Analytics</a></li>
+            </ul>
+            <div class="user-menu">
+                <span id="user-name"></span>
+                <button onclick="logout()" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Alert Container -->
+        <div id="alert-container"></div>
+
+        <!-- Dashboard Tab -->
+        <section id="dashboard-tab" class="tab active">
+            <h2>Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-users">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-students">0</div>
+                    <div class="stat-label">Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-lecturers">0</div>
+                    <div class="stat-label">Lecturers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-departments">0</div>
+                    <div class="stat-label">Departments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-programs">0</div>
+                    <div class="stat-label">Programs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-courses">0</div>
+                    <div class="stat-label">Courses</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Departments Tab -->
+        <section id="departments-tab" class="tab">
+            <div class="tab-header">
+                <h2>Departments</h2>
+                <button class="btn btn-primary" onclick="AdminDashboard.openModal('department')">+ Add Department</button>
+            </div>
+            <table id="departments-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Programs Tab -->
+        <section id="programs-tab" class="tab">
+            <div class="tab-header">
+                <h2>Programs</h2>
+                <button class="btn btn-primary" onclick="AdminDashboard.openModal('program')">+ Add Program</button>
+            </div>
+            <table id="programs-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Duration (Years)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Courses Tab -->
+        <section id="courses-tab" class="tab">
+            <div class="tab-header">
+                <h2>Courses</h2>
+                <button class="btn btn-primary" onclick="AdminDashboard.openModal('course')">+ Add Course</button>
+            </div>
+            <table id="courses-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Program</th>
+                        <th>Credits</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Students Tab -->
+        <section id="students-tab" class="tab">
+            <div class="tab-header">
+                <h2>Students</h2>
+                <button class="btn btn-primary" onclick="AdminDashboard.openModal('student')">+ Register Student</button>
+            </div>
+            <table id="students-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Program</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Lecturers Tab -->
+        <section id="lecturers-tab" class="tab">
+            <div class="tab-header">
+                <h2>Lecturers</h2>
+                <button class="btn btn-primary" onclick="AdminDashboard.openModal('lecturer')">+ Register Lecturer</button>
+            </div>
+            <table id="lecturers-table">
+                <thead>
+                    <tr>
+                        <th>Lecturer ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Specialization</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Assignments Tab -->
+        <section id="assignments-tab" class="tab">
+            <div class="tab-header">
+                <h2>Course-Lecturer Assignments</h2>
+                <button class="btn btn-primary" onclick="AdminDashboard.openModal('assignment')">+ Assign Lecturer to Course</button>
+            </div>
+            <table id="assignments-table">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Lecturer Name</th>
+                        <th>Assigned Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Student Course Enrollments</h3>
+            <div class="tab-header">
+                <div></div>
+                <button class="btn btn-primary" onclick="AdminDashboard.openModal('enrollment')">+ Enroll Student in Course</button>
+            </div>
+            <table id="enrollments-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Enrollment Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+        <section id="users-tab" class="tab">
+            <div class="tab-header">
+                <h2>Users</h2>
+            </div>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Reports Tab -->
+        <section id="reports-tab" class="tab">
+            <h2>Attendance Reports</h2>
+            <div class="reports-grid">
+                <div class="report-card">
+                    <h3>📊 Course Attendance Report</h3>
+                    <label for="report-course-select">Select Course:</label>
+                    <select id="report-course-select" class="form-control">
+                        <option value="">Choose a course...</option>
+                    </select>
+                    <div class="button-group">
+                        <button class="btn btn-success" onclick="AdminDashboard.exportCourseReportCSV()">📥 Download CSV</button>
+                        <button class="btn btn-info" onclick="AdminDashboard.exportCourseReportPDF()">📥 Download PDF</button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <h3>👥 Student Report</h3>
+                    <label for="report-student-select">Select Student:</label>
+                    <select id="report-student-select" class="form-control">
+                        <option value="">Choose a student...</option>
+                    </select>
+                    <button class="btn btn-primary btn-block" onclick="AdminDashboard.viewStudentReport()">View Report</button>
+                </div>
+
+                <div class="report-card">
+                    <h3>🏢 Department Report</h3>
+                    <label for="report-dept-select">Select Department:</label>
+                    <select id="report-dept-select" class="form-control">
+                        <option value="">Choose a department...</option>
+                    </select>
+                    <button class="btn btn-primary btn-block" onclick="AdminDashboard.viewDepartmentReport()">View Report</button>
+                </div>
+
+                <div class="report-card">
+                    <h3>📅 Date Range Report</h3>
+                    <label for="report-start-date">Start Date:</label>
+                    <input type="date" id="report-start-date" class="form-control">
+                    <label for="report-end-date" style="margin-top: 10px;">End Date:</label>
+                    <input type="date" id="report-end-date" class="form-control">
+                    <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="AdminDashboard.viewDateRangeReport()">View Report</button>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px;">Low Attendance Students</h3>
+            <div class="threshold-control">
+                <label for="attendance-threshold">Threshold (%):</label>
+                <input type="number" id="attendance-threshold" value="75" min="0" max="100" class="form-control" style="width: 100px;">
+                <button class="btn btn-primary" onclick="AdminDashboard.viewLowAttendanceStudents()">Load</button>
+            </div>
+            <table id="low-attendance-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Average Attendance</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Analytics Tab -->
+        <section id="analytics-tab" class="tab">
+            <h2>System Analytics</h2>
+            
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="metric-label">Total Sessions</div>
+                    <div class="metric-value" id="metric-sessions">0</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="metric-label">Total Check-ins</div>
+                    <div class="metric-value" id="metric-checkins">0</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="metric-label">System Average Attendance</div>
+                    <div class="metric-value" id="metric-avg">0%</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="metric-label">Active Warnings</div>
+                    <div class="metric-value" id="metric-warnings">0</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Course Performance</h3>
+            <table id="course-stats-table">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Enrolled Students</th>
+                        <th>Average Attendance</th>
+                        <th>Sessions</th>
+                        <th>Low Attendance Count</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Student Performance</h3>
+            <table id="student-stats-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Enrolled Courses</th>
+                        <th>Average Attendance</th>
+                        <th>Low Courses</th>
+                        <th>Critical Courses</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Modal Title</h2>
+                <button class="close-btn" onclick="AdminDashboard.closeModal()">×</button>
+            </div>
+            <form id="modal-form">
+                <!-- Form fields will be populated dynamically -->
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/admin-dashboard.js"></script>
+</body>
+</html>

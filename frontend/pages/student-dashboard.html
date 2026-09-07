@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Attendance System</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/student-dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="nav-logo">
+                    <h1>📚 Student Portal</h1>
+                </div>
+                <div class="nav-menu">
+                    <span class="user-info" id="userInfo"></span>
+                    <button class="btn btn-secondary" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="dashboard-wrapper">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="sidebar-menu">
+                    <div class="menu-item active" data-tab="courses">
+                        <span class="menu-icon">📖</span>
+                        <span class="menu-text">My Courses</span>
+                    </div>
+                    <div class="menu-item" data-tab="attendance">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Attendance History</span>
+                    </div>
+                    <div class="menu-item" data-tab="warnings">
+                        <span class="menu-icon">⚠️</span>
+                        <span class="menu-text">Warnings</span>
+                    </div>
+                    <div class="menu-item" data-tab="statistics">
+                        <span class="menu-icon">📈</span>
+                        <span class="menu-text">Statistics</span>
+                    </div>
+                    <div class="menu-item" data-tab="check-in">
+                        <span class="menu-icon">✅</span>
+                        <span class="menu-text">Check-in</span>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- My Courses Tab -->
+                <div class="tab-content active" id="courses-tab">
+                    <div class="content-header">
+                        <h2>My Courses</h2>
+                        <p>View your enrolled courses and details</p>
+                    </div>
+
+                    <div class="courses-grid" id="coursesGrid">
+                        <div class="loading-state">
+                            <p>Loading courses...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance History Tab -->
+                <div class="tab-content" id="attendance-tab">
+                    <div class="content-header">
+                        <h2>Attendance History</h2>
+                        <p>View your attendance records by course</p>
+                    </div>
+
+                    <div class="attendance-filters">
+                        <select id="courseFilterSelect" class="filter-select">
+                            <option value="">Select a course...</option>
+                        </select>
+                    </div>
+
+                    <div class="attendance-table-wrapper">
+                        <table class="attendance-table" id="attendanceTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Course</th>
+                                    <th>Check-in Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody">
+                                <tr class="empty-state">
+                                    <td colspan="4">No attendance records found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Warnings Tab -->
+                <div class="tab-content" id="warnings-tab">
+                    <div class="content-header">
+                        <h2>Low Attendance Warnings</h2>
+                        <p>Review and acknowledge attendance warnings</p>
+                    </div>
+
+                    <div class="warnings-container" id="warningsContainer">
+                        <div class="empty-state">
+                            <p>✓ No warnings. Great attendance!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div class="tab-content" id="statistics-tab">
+                    <div class="content-header">
+                        <h2>Attendance Statistics</h2>
+                        <p>Your attendance summary across courses</p>
+                    </div>
+
+                    <div class="stats-overview">
+                        <div class="stat-card">
+                            <div class="stat-label">Overall Average</div>
+                            <div class="stat-value" id="overallAverage">--</div>
+                            <div class="stat-subtext">Attendance %</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Enrolled Courses</div>
+                            <div class="stat-value" id="enrolledCourses">--</div>
+                            <div class="stat-subtext">Active Courses</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Good Courses</div>
+                            <div class="stat-value" id="goodCourses">--</div>
+                            <div class="stat-subtext">≥ 75% Attendance</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">At-Risk Courses</div>
+                            <div class="stat-value critical" id="atRiskCourses">--</div>
+                            <div class="stat-subtext">< 75% Attendance</div>
+                        </div>
+                    </div>
+
+                    <div class="statistics-table-wrapper">
+                        <table class="statistics-table" id="statisticsTable">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Attendance %</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="statisticsTableBody">
+                                <tr class="empty-state">
+                                    <td colspan="4">No courses enrolled</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Check-in Tab -->
+                <div class="tab-content" id="check-in-tab">
+                    <div class="content-header">
+                        <h2>Attendance Check-in</h2>
+                        <p>Check in to an attendance session</p>
+                    </div>
+
+                    <div class="check-in-form">
+                        <div class="form-group">
+                            <label for="sessionCode">Session Code</label>
+                            <input type="text" id="sessionCode" placeholder="Enter or scan session code" class="form-input">
+                            <small class="form-hint">Scan the QR code displayed by your lecturer</small>
+                        </div>
+
+                        <button id="checkInBtn" class="btn btn-primary btn-large">Check In</button>
+
+                        <div id="checkInMessage" class="message-box hidden"></div>
+                    </div>
+
+                    <div class="recent-check-ins">
+                        <h3>Recent Check-ins</h3>
+                        <div id="recentCheckInsList" class="check-in-list">
+                            <div class="empty-state">No check-ins yet</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Course Details -->
+    <div id="courseDetailModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="courseDetailTitle">Course Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="course-detail-content" id="courseDetailContent">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/student-dashboard.js"></script>
+    <script>
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboard = new StudentDashboard();
+        });
+    </script>
+</body>
+</html>

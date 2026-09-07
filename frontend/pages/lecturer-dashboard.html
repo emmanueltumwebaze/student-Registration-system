@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Dashboard - Attendance System</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/lecturer-dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="nav-logo">
+                    <h1>👨‍🏫 Lecturer Portal</h1>
+                </div>
+                <div class="nav-menu">
+                    <span class="user-info" id="userInfo"></span>
+                    <button class="btn btn-secondary" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="dashboard-wrapper">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="sidebar-menu">
+                    <div class="menu-item active" data-tab="courses">
+                        <span class="menu-icon">📖</span>
+                        <span class="menu-text">My Courses</span>
+                    </div>
+                    <div class="menu-item" data-tab="sessions">
+                        <span class="menu-icon">⏱️</span>
+                        <span class="menu-text">Attendance Sessions</span>
+                    </div>
+                    <div class="menu-item" data-tab="attendance">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Attendance Records</span>
+                    </div>
+                    <div class="menu-item" data-tab="reports">
+                        <span class="menu-icon">📄</span>
+                        <span class="menu-text">Reports & Export</span>
+                    </div>
+                    <div class="menu-item" data-tab="statistics">
+                        <span class="menu-icon">📈</span>
+                        <span class="menu-text">Statistics</span>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- My Courses Tab -->
+                <div class="tab-content active" id="courses-tab">
+                    <div class="content-header">
+                        <h2>My Assigned Courses</h2>
+                        <p>View your assigned courses and enrollments</p>
+                    </div>
+
+                    <div class="courses-grid" id="coursesGrid">
+                        <div class="loading-state">
+                            <p>Loading courses...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Sessions Tab -->
+                <div class="tab-content" id="sessions-tab">
+                    <div class="content-header">
+                        <h2>Attendance Sessions</h2>
+                        <p>Create and manage attendance sessions</p>
+                    </div>
+
+                    <!-- Session Creation Form -->
+                    <div class="session-form-wrapper">
+                        <div class="form-card">
+                            <h3>Create New Session</h3>
+                            <form id="sessionForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="sessionCourse">Course</label>
+                                        <select id="sessionCourse" required class="form-control">
+                                            <option value="">Select a course...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sessionDate">Session Date</label>
+                                        <input type="date" id="sessionDate" required class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="startTime">Start Time</label>
+                                        <input type="time" id="startTime" required class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="endTime">End Time</label>
+                                        <input type="time" id="endTime" required class="form-control">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Create Session</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Sessions List -->
+                    <div class="sessions-list-wrapper">
+                        <h3>Active Sessions</h3>
+                        <div id="sessionsList" class="sessions-list">
+                            <div class="empty-state">No active sessions</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Records Tab -->
+                <div class="tab-content" id="attendance-tab">
+                    <div class="content-header">
+                        <h2>Attendance Records</h2>
+                        <p>View student check-ins by course and session</p>
+                    </div>
+
+                    <div class="attendance-filters">
+                        <select id="courseSelectAttendance" class="filter-select">
+                            <option value="">Select a course...</option>
+                        </select>
+                        <select id="sessionSelectAttendance" class="filter-select">
+                            <option value="">Select a session...</option>
+                        </select>
+                    </div>
+
+                    <div class="attendance-table-wrapper">
+                        <table class="attendance-table" id="attendanceTable">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Check-in Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody">
+                                <tr class="empty-state">
+                                    <td colspan="4">Select a session to view records</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports & Export Tab -->
+                <div class="tab-content" id="reports-tab">
+                    <div class="content-header">
+                        <h2>Reports & Export</h2>
+                        <p>Generate and download attendance reports</p>
+                    </div>
+
+                    <div class="reports-container">
+                        <!-- Course Report -->
+                        <div class="report-card">
+                            <h3>📊 Course Attendance Report</h3>
+                            <p>Generate detailed attendance report for a course</p>
+                            <div class="form-group">
+                                <label for="reportCourse">Select Course</label>
+                                <select id="reportCourse" class="form-control">
+                                    <option value="">Select a course...</option>
+                                </select>
+                            </div>
+                            <div class="report-buttons">
+                                <button class="btn btn-success" onclick="lecturer.exportCourseReportCSV()">
+                                    📥 Download CSV
+                                </button>
+                                <button class="btn btn-info" onclick="lecturer.exportCourseReportPDF()">
+                                    📥 Download PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Statistics Report -->
+                        <div class="report-card">
+                            <h3>📈 Course Statistics</h3>
+                            <p>View attendance statistics and metrics</p>
+                            <div class="form-group">
+                                <label for="statsCourse">Select Course</label>
+                                <select id="statsCourse" class="form-control">
+                                    <option value="">Select a course...</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="lecturer.viewCourseStatistics()">
+                                View Statistics
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Display -->
+                    <div id="statsDisplay" class="stats-display hidden">
+                        <div class="stats-overview">
+                            <div class="stat-card">
+                                <div class="stat-label">Total Sessions</div>
+                                <div class="stat-value" id="totalSessions">--</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Enrolled Students</div>
+                                <div class="stat-value" id="enrolledStudents">--</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Average Attendance</div>
+                                <div class="stat-value" id="avgAttendance">--</div>
+                                <div class="stat-subtext">%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Low Attendance Count</div>
+                                <div class="stat-value critical" id="lowAttendanceCount">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div class="tab-content" id="statistics-tab">
+                    <div class="content-header">
+                        <h2>Attendance Statistics</h2>
+                        <p>Overview of your courses' attendance performance</p>
+                    </div>
+
+                    <div class="statistics-overview">
+                        <div class="stat-card">
+                            <div class="stat-label">Assigned Courses</div>
+                            <div class="stat-value" id="totalCourses">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Sessions Created</div>
+                            <div class="stat-value" id="totalSessionsCreated">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Check-ins</div>
+                            <div class="stat-value" id="totalCheckIns">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">System Average</div>
+                            <div class="stat-value" id="systemAverage">--</div>
+                            <div class="stat-subtext">%</div>
+                        </div>
+                    </div>
+
+                    <div class="statistics-table-wrapper">
+                        <h3>Course Performance Summary</h3>
+                        <table class="statistics-table" id="statsTable">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Students</th>
+                                    <th>Sessions</th>
+                                    <th>Average Attendance</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="statsTableBody">
+                                <tr class="empty-state">
+                                    <td colspan="6">No courses assigned</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- QR Code Display Modal -->
+    <div id="qrModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Attendance Session QR Code</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="qr-display">
+                    <img id="qrImage" src="" alt="QR Code" class="qr-image">
+                    <div class="qr-info">
+                        <p><strong>Session Code:</strong> <span id="sessionCodeDisplay"></span></p>
+                        <p><strong>Course:</strong> <span id="courseDisplay"></span></p>
+                        <p><strong>Date & Time:</strong> <span id="dateTimeDisplay"></span></p>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="lecturer.downloadQR()">
+                        📥 Download QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/lecturer-dashboard.js"></script>
+    <script>
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.lecturer = new LecturerDashboard();
+        });
+    </script>
+</body>
+</html>
