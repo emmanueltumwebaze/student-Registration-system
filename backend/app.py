@@ -83,7 +83,37 @@ if __name__ == '__main__':
     app = create_app('production')
     with app.app_context():
         db.create_all()
+
+
+        if __name__ == '__main__':
+    app = create_app('production')
+    with app.app_context():
+        db.create_all()
         
-    # Leave your original run command as it is:
+        # Add this block right here to automatically insert your Admin profile:
+        from models import User
+        from werkzeug.security import generate_password_hash
+
+        # Change this email address to whatever admin account you want to use!
+        admin_email = 'admin@attendance.com' 
+        
+        admin_exists = User.query.filter_by(email=admin_email).first()
+        if not admin_exists:
+            # Modify these placeholder variables to match your exact User model column strings:
+            master_admin = User(
+                email='admin@university.edu',
+                password=generate_password_hash('Admin123'), # Choose your password here
+                role='admin',
+                first_name='System',
+                last_name='Admin',
+                is_active=True
+            )
+            db.session.add(master_admin)
+            db.session.commit()
+            print("Master administrator account successfully seeded into live database! 🎉")
+
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+        
+    
     
