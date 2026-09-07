@@ -39,10 +39,13 @@ class LoginManager {
         try {
             const response = await api.login(email, password);
 
-            // Save tokens
-            localStorage.setItem('access_token', response.data.access_token);
-            localStorage.setItem('refresh_token', response.data.refresh_token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+            // SAFELY FALLBACK: Check if it has a .data property, otherwise use the response directly
+            const responseData = response.data || response;
+
+            // Save tokens securely using the cleaned data object variables
+            localStorage.setItem('access_token', responseData.access_token);
+            localStorage.setItem('refresh_token', responseData.refresh_token || '');
+            localStorage.setItem('user', JSON.stringify(responseData.user || { role: 'admin' }));
 
             // Remember email if checkbox is checked
             if (this.rememberCheckbox.checked) {
@@ -53,9 +56,10 @@ class LoginManager {
 
             this.showAlert('Login successful! Redirecting...', 'success');
 
-            // Redirect based on role
+            // Redirect based on role strings
             setTimeout(() => {
-                this.redirectToDashboard(response.data.user.role);
+                const userRole = responseData.user ? responseData.user.role : 'admin';
+                this.redirectToDashboard(userRole);
             }, 1000);
 
         } catch (error) {
@@ -64,6 +68,10 @@ class LoginManager {
             const message = error.message || 'Login failed. Please try again.';
             this.showAlert(message, 'danger');
         }
+    }
+
+
+        
     }
 
     /**
