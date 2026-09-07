@@ -95,7 +95,7 @@ if __name__ == '__main__':
         from werkzeug.security import generate_password_hash
 
         # Change this email address to whatever admin account you want to use!
-        admin_email = 'admin@attendance.com' 
+        admin_email = 'admin@university.edu' 
         
         admin_exists = User.query.filter_by(email=admin_email).first()
         if not admin_exists:
