@@ -70,10 +70,6 @@ class LoginManager {
         }
     }
 
-
-        
-    }
-
     /**
      * Show/hide loading overlay
      */
