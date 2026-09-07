@@ -14,7 +14,7 @@ load_dotenv()
 # Initialize extensions (must be before importing models)
 
 
-def create_app(config_name='development'):
+def create_app(config_name=None):
     """Application factory function"""
     app = Flask(__name__)
     
