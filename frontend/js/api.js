@@ -42,16 +42,18 @@ class API {
         try {
             const response = await fetch(url, config);
 
-            // Handle unauthorized (token expired)
+            const data = await response.json();
+
+            // Login failures must reach the login page instead of returning undefined.
             if (response.status === 401) {
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
                 localStorage.removeItem('user');
-                window.location.href = '/pages/login.html';
-                return;
-            }
 
-            const data = await response.json();
+                if (endpoint !== '/auth/login') {
+                    window.location.href = '/pages/login.html';
+                }
+            }
 
             if (!response.ok) {
                 // Backend returns error as 'error' field
