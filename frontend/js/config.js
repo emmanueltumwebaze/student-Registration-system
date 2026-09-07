@@ -2,7 +2,7 @@
  * Configuration
  */
 const CONFIG = {
-    API_BASE_URL: 'https://onrender.com',
+    API_BASE_URL: 'https://student-registration-system-tdtk.onrender.com/api',
     APP_NAME: 'Student-Attendance-System',
     // Token expiration in milliseconds (24 hours)
     TOKEN_EXPIRATION: 24 * 60 * 60 * 1000,
