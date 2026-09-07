@@ -99,6 +99,7 @@ if __name__ == '__main__':
         
         admin_exists = User.query.filter_by(email=admin_email).first()
         if not admin_exists:
+
             # Modify these placeholder variables to match your exact User model column strings:
             master_admin = User(
                 email='admin@university.edu',
@@ -112,7 +113,7 @@ if __name__ == '__main__':
             db.session.commit()
             print("Master administrator account successfully seeded into live database! 🎉")
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+app.run(debug=True, host='0.0.0.0', port=5000)
 
         
     
