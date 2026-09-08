@@ -19,13 +19,13 @@ class AdminDashboard {
         const userStr = localStorage.getItem('user');
         
         if (!token || !userStr) {
-            window.location.href = '/pages/login.html';
+            window.location.href = new URL('../pages/login.html', window.location.href).href;
             return;
         }
 
         const user = JSON.parse(userStr);
         if (user.role !== 'admin') {
-            window.location.href = '/pages/login.html';
+            window.location.href = new URL('../pages/login.html', window.location.href).href;
             return;
         }
     }

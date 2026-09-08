@@ -45,7 +45,7 @@ function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
-    window.location.href = '/pages/login.html';
+    window.location.href = new URL('../pages/login.html', window.location.href).href;
 }
 
 // Initialize application

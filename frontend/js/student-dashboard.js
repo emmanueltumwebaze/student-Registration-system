@@ -22,7 +22,7 @@ class StudentDashboard {
         const role = (user.role || '').toLowerCase();
         
         if (!token || role !== 'student') {
-            window.location.href = '/pages/login.html';
+            window.location.href = new URL('../pages/login.html', window.location.href).href;
             return;
         }
 
@@ -34,7 +34,7 @@ class StudentDashboard {
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             localStorage.removeItem('user');
-            window.location.href = '/pages/login.html';
+            window.location.href = new URL('../pages/login.html', window.location.href).href;
             return;
         }
 

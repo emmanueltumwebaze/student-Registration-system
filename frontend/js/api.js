@@ -3,7 +3,7 @@
  */
 class API {
     constructor(baseURL) {
-        this.baseURL = baseURL;
+        this.baseURL = (CONFIG.API_BASE_URL_OVERRIDE || baseURL).replace(/\/$/, '');
     }
 
     /**
@@ -51,7 +51,7 @@ class API {
                 localStorage.removeItem('user');
 
                 if (endpoint !== '/auth/login') {
-                    window.location.href = '/pages/login.html';
+                    window.location.href = new URL('../pages/login.html', window.location.href).href;
                 }
             }
 
@@ -63,6 +63,9 @@ class API {
             return data;
         } catch (error) {
             console.error('API Error:', error);
+            if (error instanceof TypeError && error.message === 'Failed to fetch') {
+                throw new Error(`Unable to reach the server at ${url}. Check the API URL and your internet connection.`);
+            }
             throw error;
         }
     }
@@ -78,7 +81,7 @@ class API {
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             localStorage.removeItem('user');
-            window.location.href = '/pages/login.html';
+            window.location.href = new URL('../pages/login.html', window.location.href).href;
             return;
         }
 
