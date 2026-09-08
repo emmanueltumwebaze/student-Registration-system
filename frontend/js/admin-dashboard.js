@@ -74,7 +74,7 @@ class AdminDashboard {
     /**
      * Load departments
      */
-    async loadDepartments() {
+    async loadDepartments(silent = false) {
         try {
             const response = await api.getDepartments();
             const tbody = document.querySelector('#departments-table tbody');
@@ -96,6 +96,7 @@ class AdminDashboard {
                 `;
             });
         } catch (error) {
+            if (silent) throw error;
             this.showAlert(`Failed to load departments: ${error.message}`, 'danger');
         }
     }
@@ -103,7 +104,7 @@ class AdminDashboard {
     /**
      * Load programs
      */
-    async loadPrograms() {
+    async loadPrograms(silent = false) {
         try {
             const response = await api.getPrograms();
             const tbody = document.querySelector('#programs-table tbody');
@@ -126,6 +127,7 @@ class AdminDashboard {
                 `;
             });
         } catch (error) {
+            if (silent) throw error;
             this.showAlert(`Failed to load programs: ${error.message}`, 'danger');
         }
     }
@@ -168,7 +170,7 @@ class AdminDashboard {
     /**
      * Load students
      */
-    async loadStudents() {
+    async loadStudents(silent = false) {
         try {
             const response = await api.getStudents();
             const tbody = document.querySelector('#students-table tbody');
@@ -196,6 +198,7 @@ class AdminDashboard {
                 `;
             });
         } catch (error) {
+            if (silent) throw error;
             this.showAlert(`Failed to load students: ${error.message}`, 'danger');
         }
     }
@@ -203,7 +206,7 @@ class AdminDashboard {
     /**
      * Load lecturers
      */
-    async loadLecturers() {
+    async loadLecturers(silent = false) {
         try {
             const response = await api.getLecturers();
             const tbody = document.querySelector('#lecturers-table tbody');
@@ -232,6 +235,7 @@ class AdminDashboard {
                 `;
             });
         } catch (error) {
+            if (silent) throw error;
             this.showAlert(`Failed to load lecturers: ${error.message}`, 'danger');
         }
     }
@@ -239,7 +243,7 @@ class AdminDashboard {
     /**
      * Load assignments
      */
-    async loadAssignments() {
+    async loadAssignments(silent = false) {
         try {
             const response = await api.getCourseLecturers();
             const tbody = document.querySelector('#assignments-table tbody');
@@ -268,6 +272,7 @@ class AdminDashboard {
                 `;
             });
         } catch (error) {
+            if (silent) throw error;
             this.showAlert(`Failed to load assignments: ${error.message}`, 'danger');
         }
     }
@@ -275,7 +280,7 @@ class AdminDashboard {
     /**
      * Load enrollments
      */
-    async loadEnrollments() {
+    async loadEnrollments(silent = false) {
         try {
             const response = await api.getStudentCourseEnrollments();
             const tbody = document.querySelector('#enrollments-table tbody');
@@ -305,6 +310,7 @@ class AdminDashboard {
                 `;
             });
         } catch (error) {
+            if (silent) throw error;
             this.showAlert(`Failed to load enrollments: ${error.message}`, 'danger');
         }
     }
@@ -692,6 +698,9 @@ class AdminDashboard {
      */
     static async submitDepartment(e) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (form.dataset.submitting === 'true') return;
+        form.dataset.submitting = 'true';
         const data = {
             name: document.getElementById('name').value,
             code: document.getElementById('code').value,
@@ -700,16 +709,21 @@ class AdminDashboard {
 
         try {
             await api.createDepartment(data);
-            this.showAlert('Department created successfully', 'success');
             this.closeModal();
-            await window.admin.loadDepartments();
+            this.showAlert('Department created successfully', 'success');
+            await window.admin.loadDepartments(true).catch(error => console.error('Department saved, but refresh failed:', error));
         } catch (error) {
             this.showAlert(`Failed to create department: ${error.message}`, 'danger');
+        } finally {
+            form.dataset.submitting = 'false';
         }
     }
 
     static async submitProgram(e) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (form.dataset.submitting === 'true') return;
+        form.dataset.submitting = 'true';
         const dashboard = AdminDashboard.instance;
         const data = {
             name: document.getElementById('name').value,
@@ -733,11 +747,16 @@ class AdminDashboard {
             this.showAlert(`Program ${data.name} registered successfully.`, 'success');
         } catch (error) {
             this.showAlert(`Failed to create program: ${error.message}`, 'danger');
+        } finally {
+            form.dataset.submitting = 'false';
         }
     }
 
     static async submitCourse(e) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (form.dataset.submitting === 'true') return;
+        form.dataset.submitting = 'true';
         const dashboard = AdminDashboard.instance;
         const data = {
             code: document.getElementById('code').value,
@@ -761,6 +780,8 @@ class AdminDashboard {
             this.showAlert(`Course ${data.name} created successfully.`, 'success');
         } catch (error) {
             this.showAlert(`Failed to create course: ${error.message}`, 'danger');
+        } finally {
+            form.dataset.submitting = 'false';
         }
     }
 
@@ -769,6 +790,9 @@ class AdminDashboard {
      */
     static async submitStudent(e) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (form.dataset.submitting === 'true') return;
+        form.dataset.submitting = 'true';
         const data = {
             first_name: document.getElementById('first_name').value,
             last_name: document.getElementById('last_name').value,
@@ -782,11 +806,13 @@ class AdminDashboard {
 
         try {
             await api.registerStudent(data);
-            this.showAlert('Student registered successfully', 'success');
             this.closeModal();
-            await window.admin.loadStudents();
+            this.showAlert('Student registered successfully', 'success');
+            await window.admin.loadStudents(true).catch(error => console.error('Student saved, but refresh failed:', error));
         } catch (error) {
             this.showAlert(`Failed to register student: ${error.message}`, 'danger');
+        } finally {
+            form.dataset.submitting = 'false';
         }
     }
 
@@ -795,6 +821,9 @@ class AdminDashboard {
      */
     static async submitLecturer(e) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (form.dataset.submitting === 'true') return;
+        form.dataset.submitting = 'true';
         const data = {
             first_name: document.getElementById('first_name').value,
             last_name: document.getElementById('last_name').value,
@@ -808,11 +837,13 @@ class AdminDashboard {
 
         try {
             await api.registerLecturer(data);
-            this.showAlert('Lecturer registered successfully', 'success');
             this.closeModal();
-            await window.admin.loadLecturers();
+            this.showAlert('Lecturer registered successfully', 'success');
+            await window.admin.loadLecturers(true).catch(error => console.error('Lecturer saved, but refresh failed:', error));
         } catch (error) {
             this.showAlert(`Failed to register lecturer: ${error.message}`, 'danger');
+        } finally {
+            form.dataset.submitting = 'false';
         }
     }
 
@@ -1402,6 +1433,9 @@ AdminDashboard.populateEnrollmentSelects = async function() {
 
 AdminDashboard.submitAssignment = async function(e) {
     e.preventDefault();
+    const form = e.currentTarget;
+    if (form.dataset.submitting === 'true') return;
+    form.dataset.submitting = 'true';
     const data = {
         course_id: parseInt(document.getElementById('course_id').value),
         lecturer_id: parseInt(document.getElementById('lecturer_id').value)
@@ -1409,16 +1443,21 @@ AdminDashboard.submitAssignment = async function(e) {
 
     try {
         await api.assignLecturerToCourse(data);
-        this.showAlert('Lecturer assigned to course successfully', 'success');
         this.closeModal();
-        await window.admin.loadAssignments();
+        this.showAlert('Lecturer assigned to course successfully', 'success');
+        await window.admin.loadAssignments(true).catch(error => console.error('Assignment saved, but refresh failed:', error));
     } catch (error) {
         this.showAlert(`Failed to assign: ${error.message}`, 'danger');
+    } finally {
+        form.dataset.submitting = 'false';
     }
 };
 
 AdminDashboard.submitEnrollment = async function(e) {
     e.preventDefault();
+    const form = e.currentTarget;
+    if (form.dataset.submitting === 'true') return;
+    form.dataset.submitting = 'true';
     const studentSelect = document.getElementById('student_id');
     const courseSelect = document.getElementById('course_id');
     const data = {
@@ -1431,10 +1470,12 @@ AdminDashboard.submitEnrollment = async function(e) {
     try {
         await api.enrollStudentInCourse(data);
         this.closeModal();
-        await window.admin.loadEnrollments();
         this.showAlert(`${studentName} has been enrolled in ${courseName}.`, 'success');
+        await window.admin.loadEnrollments(true).catch(error => console.error('Enrollment saved, but refresh failed:', error));
     } catch (error) {
         this.showAlert(`Failed to enroll: ${error.message}`, 'danger');
+    } finally {
+        form.dataset.submitting = 'false';
     }
 };
 
