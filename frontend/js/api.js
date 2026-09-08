@@ -40,7 +40,18 @@ class API {
         }
 
         try {
-            const response = await fetch(url, config);
+            let response;
+            for (let attempt = 0; attempt < 3; attempt += 1) {
+                try {
+                    response = await fetch(url, config);
+                    break;
+                } catch (error) {
+                    if (!(error instanceof TypeError) || attempt === 2) {
+                        throw error;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+                }
+            }
 
             const data = await response.json();
 
