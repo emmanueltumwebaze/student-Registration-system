@@ -286,7 +286,7 @@ class AdminDashboard {
             const tbody = document.querySelector('#enrollments-table tbody');
             tbody.innerHTML = '';
 
-            response.data.forEach(enrollment => {
+            (response.data || []).forEach(enrollment => {
                 const status = enrollment.is_active ?
                     '<span class="status-badge status-active">Active</span>' :
                     '<span class="status-badge status-inactive">Inactive</span>';
@@ -311,7 +311,7 @@ class AdminDashboard {
             });
         } catch (error) {
             if (silent) throw error;
-            this.showAlert(`Failed to load enrollments: ${error.message}`, 'danger');
+            console.error('Failed to load enrollments:', error);
         }
     }
 
@@ -1488,6 +1488,8 @@ AdminDashboard.submitEnrollment = async function(e) {
     const form = e.currentTarget;
     if (form.dataset.submitting === 'true') return;
     form.dataset.submitting = 'true';
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
     const studentSelect = document.getElementById('student_id');
     const courseSelect = document.getElementById('course_id');
     const data = {
@@ -1501,11 +1503,21 @@ AdminDashboard.submitEnrollment = async function(e) {
         await api.enrollStudentInCourse(data);
         this.closeModal();
         this.showAlert(`${studentName} has been enrolled in ${courseName}.`, 'success');
-        await window.admin.loadEnrollments(true).catch(error => console.error('Enrollment saved, but refresh failed:', error));
     } catch (error) {
         this.showAlert(`Failed to enroll: ${error.message}`, 'danger');
+        return;
     } finally {
         form.dataset.submitting = 'false';
+        if (submitButton) submitButton.disabled = false;
+    }
+
+    const dashboard = AdminDashboard.instance;
+    if (dashboard) {
+        try {
+            await dashboard.loadEnrollments(true);
+        } catch (error) {
+            console.error('Enrollment saved, but refresh failed:', error);
+        }
     }
 };
 

@@ -203,7 +203,10 @@ def list_student_courses():
             course = Course.query.get(enrollment.course_id)
             if student and course:
                 data['student_id_num'] = student.student_id
-                data['student_name'] = f"{student.user.first_name} {student.user.last_name}"
+                data['student_name'] = (
+                    f"{student.user.first_name} {student.user.last_name}"
+                    if student.user else student.student_id
+                )
                 data['course_code'] = course.code
                 data['course_name'] = course.name
             result.append(data)
