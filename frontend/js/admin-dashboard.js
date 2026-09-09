@@ -738,6 +738,8 @@ class AdminDashboard {
         if (form.dataset.submitting === 'true') return;
         form.dataset.submitting = 'true';
         const dashboard = AdminDashboard.instance;
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
         const data = {
             name: document.getElementById('name').value,
             code: document.getElementById('code').value,
@@ -749,19 +751,22 @@ class AdminDashboard {
         try {
             await api.createProgram(data);
             this.closeModal();
-            if (dashboard) {
-                try {
-                    await dashboard.loadPrograms();
-                    await dashboard.loadStatistics();
-                } catch (refreshError) {
-                    console.error('Program created, but dashboard refresh failed:', refreshError);
-                }
-            }
             this.showAlert(`Program ${data.name} registered successfully.`, 'success');
         } catch (error) {
             this.showAlert(`Failed to create program: ${error.message}`, 'danger');
+            return;
         } finally {
             form.dataset.submitting = 'false';
+            if (submitButton) submitButton.disabled = false;
+        }
+
+        if (dashboard) {
+            try {
+                await dashboard.loadPrograms();
+                await dashboard.loadStatistics();
+            } catch (refreshError) {
+                console.error('Program created, but dashboard refresh failed:', refreshError);
+            }
         }
     }
 
@@ -771,6 +776,8 @@ class AdminDashboard {
         if (form.dataset.submitting === 'true') return;
         form.dataset.submitting = 'true';
         const dashboard = AdminDashboard.instance;
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
         const data = {
             code: document.getElementById('code').value,
             name: document.getElementById('name').value,
@@ -782,19 +789,22 @@ class AdminDashboard {
         try {
             await api.createCourse(data);
             this.closeModal();
-            if (dashboard) {
-                try {
-                    await dashboard.loadCourses();
-                    await dashboard.loadStatistics();
-                } catch (refreshError) {
-                    console.error('Course created, but dashboard refresh failed:', refreshError);
-                }
-            }
             this.showAlert(`Course ${data.name} created successfully.`, 'success');
         } catch (error) {
             this.showAlert(`Failed to create course: ${error.message}`, 'danger');
+            return;
         } finally {
             form.dataset.submitting = 'false';
+            if (submitButton) submitButton.disabled = false;
+        }
+
+        if (dashboard) {
+            try {
+                await dashboard.loadCourses();
+                await dashboard.loadStatistics();
+            } catch (refreshError) {
+                console.error('Course created, but dashboard refresh failed:', refreshError);
+            }
         }
     }
 
