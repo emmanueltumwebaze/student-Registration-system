@@ -176,16 +176,17 @@ class AdminDashboard {
             const tbody = document.querySelector('#students-table tbody');
             tbody.innerHTML = '';
 
-            response.data.forEach(student => {
+            (response.data || []).forEach(student => {
                 const status = student.is_active ?
                     '<span class="status-badge status-active">Active</span>' :
                     '<span class="status-badge status-inactive">Inactive</span>';
+                const studentUser = student.user || {};
 
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${student.student_id}</strong></td>
-                        <td>${student.user.first_name} ${student.user.last_name}</td>
-                        <td>${student.user.email}</td>
+                        <td>${studentUser.first_name || ''} ${studentUser.last_name || ''}</td>
+                        <td>${studentUser.email || '-'}</td>
                         <td>${student.program_id}</td>
                         <td>${status}</td>
                         <td>
@@ -199,7 +200,7 @@ class AdminDashboard {
             });
         } catch (error) {
             if (silent) throw error;
-            this.showAlert(`Failed to load students: ${error.message}`, 'danger');
+            console.error('Failed to load students:', error);
         }
     }
 
@@ -793,6 +794,8 @@ class AdminDashboard {
         const form = e.currentTarget;
         if (form.dataset.submitting === 'true') return;
         form.dataset.submitting = 'true';
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
         const data = {
             first_name: document.getElementById('first_name').value,
             last_name: document.getElementById('last_name').value,
@@ -808,11 +811,21 @@ class AdminDashboard {
             await api.registerStudent(data);
             this.closeModal();
             this.showAlert('Student registered successfully', 'success');
-            await window.admin.loadStudents(true).catch(error => console.error('Student saved, but refresh failed:', error));
         } catch (error) {
             this.showAlert(`Failed to register student: ${error.message}`, 'danger');
+            return;
         } finally {
             form.dataset.submitting = 'false';
+            if (submitButton) submitButton.disabled = false;
+        }
+
+        const dashboard = AdminDashboard.instance;
+        if (dashboard) {
+            try {
+                await dashboard.loadStudents(true);
+            } catch (error) {
+                console.error('Student saved, but refresh failed:', error);
+            }
         }
     }
 
