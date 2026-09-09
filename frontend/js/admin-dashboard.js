@@ -249,7 +249,7 @@ class AdminDashboard {
             const tbody = document.querySelector('#assignments-table tbody');
             tbody.innerHTML = '';
 
-            response.data.forEach(assign => {
+            (response.data || []).forEach(assign => {
                 const status = assign.is_active ?
                     '<span class="status-badge status-active">Active</span>' :
                     '<span class="status-badge status-inactive">Inactive</span>';
@@ -273,7 +273,7 @@ class AdminDashboard {
             });
         } catch (error) {
             if (silent) throw error;
-            this.showAlert(`Failed to load assignments: ${error.message}`, 'danger');
+            console.error('Failed to load assignments:', error);
         }
     }
 

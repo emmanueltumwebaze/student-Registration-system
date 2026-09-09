@@ -25,7 +25,10 @@ def list_course_lecturers():
             if course and lecturer:
                 data['course_code'] = course.code
                 data['course_name'] = course.name
-                data['lecturer_name'] = f"{lecturer.user.first_name} {lecturer.user.last_name}"
+                data['lecturer_name'] = (
+                    f"{lecturer.user.first_name} {lecturer.user.last_name}"
+                    if lecturer.user else lecturer.lecturer_id
+                )
                 data['lecturer_id_num'] = lecturer.lecturer_id
             result.append(data)
         return ResponseHelper.success('Course-lecturer assignments retrieved', result, 200)
