@@ -843,13 +843,22 @@ class AdminDashboard {
             await api.registerLecturer(data);
             this.closeModal();
             this.showAlert('Lecturer registered successfully', 'success');
-            await window.admin.loadLecturers(true).catch(error => console.error('Lecturer saved, but refresh failed:', error));
         } catch (error) {
             this.showAlert(`Failed to register lecturer: ${error.message}`, 'danger');
+            return;
         } finally {
             form.dataset.submitting = 'false';
             if (submitButton) {
                 submitButton.disabled = false;
+            }
+        }
+
+        const dashboard = AdminDashboard.instance;
+        if (dashboard) {
+            try {
+                await dashboard.loadLecturers(true);
+            } catch (error) {
+                console.error('Lecturer saved, but refresh failed:', error);
             }
         }
     }
