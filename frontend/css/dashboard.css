@@ -1,5 +1,21 @@
 /* Dashboard Styles */
 
+.admin-nav {
+    flex-wrap: wrap;
+    gap: 12px 20px;
+}
+
+.admin-nav .nav-links {
+    flex: 1 1 620px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+.admin-nav .user-menu {
+    flex: 0 0 auto;
+}
+
 .tab {
     display: none;
 }
