@@ -1403,7 +1403,7 @@ AdminDashboard.populateAssignmentSelects = async function() {
         const lecturers = await api.getLecturers();
 
         const courseSelect = document.getElementById('course_id');
-        courses.data.forEach(course => {
+        (courses.data || []).forEach(course => {
             const option = document.createElement('option');
             option.value = course.id;
             option.textContent = `${course.code} - ${course.name}`;
@@ -1411,14 +1411,16 @@ AdminDashboard.populateAssignmentSelects = async function() {
         });
 
         const lecturerSelect = document.getElementById('lecturer_id');
-        lecturers.data.forEach(lecturer => {
+        (lecturers.data || []).forEach(lecturer => {
             const option = document.createElement('option');
             option.value = lecturer.id;
-            option.textContent = `${lecturer.user.first_name} ${lecturer.user.last_name}`;
+            option.textContent = lecturer.user
+                ? `${lecturer.user.first_name} ${lecturer.user.last_name}`
+                : lecturer.lecturer_id;
             lecturerSelect.appendChild(option);
         });
     } catch (error) {
-        this.showAlert(`Failed to load dropdown data: ${error.message}`, 'danger');
+        AdminDashboard.showAlert(`Failed to load dropdown data: ${error.message}`, 'danger');
     }
 };
 
@@ -1452,6 +1454,8 @@ AdminDashboard.submitAssignment = async function(e) {
     const form = e.currentTarget;
     if (form.dataset.submitting === 'true') return;
     form.dataset.submitting = 'true';
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
     const data = {
         course_id: parseInt(document.getElementById('course_id').value),
         lecturer_id: parseInt(document.getElementById('lecturer_id').value)
@@ -1461,11 +1465,21 @@ AdminDashboard.submitAssignment = async function(e) {
         await api.assignLecturerToCourse(data);
         this.closeModal();
         this.showAlert('Lecturer assigned to course successfully', 'success');
-        await window.admin.loadAssignments(true).catch(error => console.error('Assignment saved, but refresh failed:', error));
     } catch (error) {
         this.showAlert(`Failed to assign: ${error.message}`, 'danger');
+        return;
     } finally {
         form.dataset.submitting = 'false';
+        if (submitButton) submitButton.disabled = false;
+    }
+
+    const dashboard = AdminDashboard.instance;
+    if (dashboard) {
+        try {
+            await dashboard.loadAssignments(true);
+        } catch (error) {
+            console.error('Assignment saved, but refresh failed:', error);
+        }
     }
 };
 
