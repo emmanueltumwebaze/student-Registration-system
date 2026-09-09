@@ -69,8 +69,10 @@ def assign_lecturer_to_course():
             lecturer_id=data['lecturer_id']
         )
         db.session.add(assignment)
+        db.session.flush()
+        response_data = assignment.to_dict()
         db.session.commit()
-        return ResponseHelper.success('Lecturer assigned to course', assignment.to_dict(), 201)
+        return ResponseHelper.success('Lecturer assigned to course', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Assignment failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -243,8 +245,10 @@ def enroll_student_in_course():
             course_id=data['course_id']
         )
         db.session.add(enrollment)
+        db.session.flush()
+        response_data = enrollment.to_dict()
         db.session.commit()
-        return ResponseHelper.success('Student enrolled in course', enrollment.to_dict(), 201)
+        return ResponseHelper.success('Student enrolled in course', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Enrollment failed: {str(e)}', 'CREATE_ERROR', 500)

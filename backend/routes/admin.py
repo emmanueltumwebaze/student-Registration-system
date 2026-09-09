@@ -48,8 +48,10 @@ def create_department():
             description=data.get('description', '')
         )
         db.session.add(dept)
+        db.session.flush()
+        response_data = dept.to_dict()
         db.session.commit()
-        return ResponseHelper.success('Department created', dept.to_dict(), 201)
+        return ResponseHelper.success('Department created', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Creation failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -151,8 +153,10 @@ def create_program():
             description=data.get('description', '')
         )
         db.session.add(program)
+        db.session.flush()
+        response_data = program.to_dict()
         db.session.commit()
-        return ResponseHelper.success('Program created', program.to_dict(), 201)
+        return ResponseHelper.success('Program created', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Creation failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -256,8 +260,10 @@ def create_course():
             description=data.get('description', '')
         )
         db.session.add(course)
+        db.session.flush()
+        response_data = course.to_dict()
         db.session.commit()
-        return ResponseHelper.success('Course created', course.to_dict(), 201)
+        return ResponseHelper.success('Course created', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Creation failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -393,9 +399,11 @@ def register_student():
             department_id=data['department_id']
         )
         db.session.add(student)
+        db.session.flush()
+        response_data = student.to_dict()
         db.session.commit()
         
-        return ResponseHelper.success('Student registered', student.to_dict(), 201)
+        return ResponseHelper.success('Student registered', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -527,9 +535,11 @@ def register_lecturer():
             specialization=data.get('specialization', '')
         )
         db.session.add(lecturer)
+        db.session.flush()
+        response_data = lecturer.to_dict()
         db.session.commit()
         
-        return ResponseHelper.success('Lecturer registered', lecturer.to_dict(), 201)
+        return ResponseHelper.success('Lecturer registered', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)
