@@ -536,7 +536,14 @@ def register_lecturer():
         )
         db.session.add(lecturer)
         db.session.flush()
-        response_data = lecturer.to_dict()
+        response_data = {
+            'id': lecturer.id,
+            'user_id': user.id,
+            'lecturer_id': lecturer.lecturer_id,
+            'department_id': lecturer.department_id,
+            'specialization': lecturer.specialization,
+            'is_active': lecturer.is_active
+        }
         db.session.commit()
         
         return ResponseHelper.success('Lecturer registered', response_data, 201)

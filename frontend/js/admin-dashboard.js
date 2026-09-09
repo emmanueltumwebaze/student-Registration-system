@@ -824,6 +824,10 @@ class AdminDashboard {
         const form = e.currentTarget;
         if (form.dataset.submitting === 'true') return;
         form.dataset.submitting = 'true';
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+        }
         const data = {
             first_name: document.getElementById('first_name').value,
             last_name: document.getElementById('last_name').value,
@@ -844,6 +848,9 @@ class AdminDashboard {
             this.showAlert(`Failed to register lecturer: ${error.message}`, 'danger');
         } finally {
             form.dataset.submitting = 'false';
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
         }
     }
 
