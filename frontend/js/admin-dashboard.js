@@ -80,7 +80,7 @@ class AdminDashboard {
             const tbody = document.querySelector('#departments-table tbody');
             tbody.innerHTML = '';
 
-            response.data.forEach(dept => {
+            (response.data || []).forEach(dept => {
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${dept.code}</strong></td>
@@ -97,7 +97,7 @@ class AdminDashboard {
             });
         } catch (error) {
             if (silent) throw error;
-            this.showAlert(`Failed to load departments: ${error.message}`, 'danger');
+            console.error('Failed to load departments:', error);
         }
     }
 
@@ -702,6 +702,8 @@ class AdminDashboard {
         const form = e.currentTarget;
         if (form.dataset.submitting === 'true') return;
         form.dataset.submitting = 'true';
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
         const data = {
             name: document.getElementById('name').value,
             code: document.getElementById('code').value,
@@ -712,11 +714,21 @@ class AdminDashboard {
             await api.createDepartment(data);
             this.closeModal();
             this.showAlert('Department created successfully', 'success');
-            await window.admin.loadDepartments(true).catch(error => console.error('Department saved, but refresh failed:', error));
         } catch (error) {
             this.showAlert(`Failed to create department: ${error.message}`, 'danger');
+            return;
         } finally {
             form.dataset.submitting = 'false';
+            if (submitButton) submitButton.disabled = false;
+        }
+
+        const dashboard = AdminDashboard.instance;
+        if (dashboard) {
+            try {
+                await dashboard.loadDepartments(true);
+            } catch (error) {
+                console.error('Department saved, but refresh failed:', error);
+            }
         }
     }
 
