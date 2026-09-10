@@ -130,6 +130,13 @@ class API {
         });
     }
 
+    async activateAccount(token, password) {
+        return this.request(`/auth/activate/${encodeURIComponent(token)}`, {
+            method: 'POST',
+            body: { password }
+        });
+    }
+
     async getProfile() {
         return this.request('/auth/profile');
     }

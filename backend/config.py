@@ -11,6 +11,7 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5500')
     
     # Upload folder
     UPLOAD_FOLDER = 'uploads'

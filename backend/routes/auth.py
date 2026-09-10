@@ -6,10 +6,23 @@ from flask_jwt_extended import (
 )
 from functools import wraps
 from app import db
-from models import User
+from models import User, ActivationToken
 from utils import ValidationHelper, ResponseHelper
+from datetime import datetime, timedelta
+import secrets
 
 auth_bp = Blueprint('auth', __name__)
+
+def create_activation_token(user):
+    """Create a short-lived token whose value is never stored in the database."""
+    token = secrets.token_urlsafe(32)
+    activation = ActivationToken(
+        user_id=user.id,
+        token_hash=ActivationToken.hash_token(token),
+        expires_at=datetime.utcnow() + timedelta(hours=24)
+    )
+    db.session.add(activation)
+    return token
 
 # Role-based access control decorators
 def admin_required(fn):
@@ -88,7 +101,7 @@ def register():
         return ResponseHelper.error('Username already taken', 'USERNAME_EXISTS', 400)
     
     # Validate role
-    valid_roles = ['admin', 'lecturer', 'student']
+    valid_roles = ['student']
     if data['role'] not in valid_roles:
         return ResponseHelper.error(
             f'Invalid role. Must be one of: {", ".join(valid_roles)}',
@@ -186,6 +199,30 @@ def login():
         )
     except Exception as e:
         return ResponseHelper.error(f'Login failed: {str(e)}', 'LOGIN_ERROR', 500)
+
+@auth_bp.route('/activate/<token>', methods=['POST'])
+def activate_account(token):
+    """Set a new user's password using a one-time activation token."""
+    data = request.get_json() or {}
+    password = data.get('password')
+    is_valid, password_msg = ValidationHelper.validate_password_strength(password or '')
+    if not is_valid:
+        return ResponseHelper.error(password_msg, 'WEAK_PASSWORD', 400)
+
+    activation = ActivationToken.query.filter_by(
+        token_hash=ActivationToken.hash_token(token)
+    ).first()
+    if not activation or not activation.is_valid():
+        return ResponseHelper.error('Activation link is invalid or expired', 'INVALID_ACTIVATION', 400)
+
+    try:
+        activation.user.set_password(password)
+        activation.used_at = datetime.utcnow()
+        db.session.commit()
+        return ResponseHelper.success('Password created successfully. You can now log in.', None, 200)
+    except Exception as e:
+        db.session.rollback()
+        return ResponseHelper.error(f'Password setup failed: {str(e)}', 'ACTIVATION_ERROR', 500)
 
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
