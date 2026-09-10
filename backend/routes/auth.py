@@ -159,12 +159,16 @@ def login():
             db.session.rollback()
             print(f"Inline seeding failed: {str(e)}")
 
-    data = request.get_json()
-    
-    if not data or not data.get('email') or not data.get('password'):
+    data = request.get_json() or {}
+    login_identifier = (data.get('email') or data.get('username') or '').strip()
+    password = data.get('password')
+
+    if not login_identifier or not password:
         return ResponseHelper.error('Email and password required', 'MISSING_CREDENTIALS', 400)
-    
-    user = User.query.filter_by(email=data['email']).first()
+
+    user = User.query.filter(
+        (User.email == login_identifier) | (User.username == login_identifier)
+    ).first()
     
     if not user or not user.check_password(data['password']):
         return ResponseHelper.error('Invalid email or password', 'INVALID_CREDENTIALS', 401)
