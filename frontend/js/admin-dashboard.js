@@ -1223,27 +1223,29 @@ class AdminDashboard {
         const threshold = document.getElementById('attendance-threshold').value || 75;
 
         try {
-            const response = await api.getLowAttendanceStudents(threshold);
+            const response = await api.getStatisticsByStudent();
             if (response && response.data) {
-                this.renderLowAttendanceTable(response.data);
+                const eligibleStudents = response.data.filter(student =>
+                    Number(student.average_attendance || 0) >= Number(threshold)
+                );
+                this.renderLowAttendanceTable(eligibleStudents, threshold);
             }
         } catch (error) {
-            this.showAlert('Error loading low attendance students', 'error');
+            this.showAlert(`Error loading exam-eligible students: ${error.message}`, 'danger');
         }
     }
 
-    static renderLowAttendanceTable(data) {
+    static renderLowAttendanceTable(data, threshold = 75) {
         const tbody = document.querySelector('#low-attendance-table tbody');
         
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No students below threshold</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">No students have reached ${threshold}% attendance</td></tr>`;
             return;
         }
 
         tbody.innerHTML = data.map(item => {
-            const status = item.average_attendance >= 75 ? 'Good' : 
-                          item.average_attendance >= 50 ? 'Low' : 'Critical';
-            const statusClass = status === 'Good' ? 'status-active' : 'status-inactive';
+            const status = 'Eligible';
+            const statusClass = 'status-active';
 
             return `
                 <tr>

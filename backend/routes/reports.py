@@ -253,6 +253,7 @@ def get_statistics_by_student():
             stats.append({
                 'student_id': student.student_id,
                 'student_name': f"{student.user.first_name} {student.user.last_name}",
+                'email': student.user.email,
                 'enrolled_courses': len(summary),
                 'average_attendance': round(avg_attendance, 2),
                 'low_attendance_courses': low_courses,
