@@ -1009,8 +1009,12 @@ class AdminDashboard {
         if (!confirm('Are you sure you want to delete this department?')) return;
         try {
             await api.deleteDepartment(id);
+            const dashboard = AdminDashboard.instance;
+            if (dashboard) {
+                await dashboard.loadDepartments();
+                await dashboard.loadStatistics();
+            }
             this.showAlert('Department deleted successfully', 'success');
-            AdminDashboard.fetchloadDepartments();
         } catch (error) {
             this.showAlert(`Failed to delete: ${error.message}`, 'danger');
         }
@@ -1020,8 +1024,12 @@ class AdminDashboard {
         if (!confirm('Are you sure you want to delete this student?')) return;
         try {
             await api.deleteStudent(id);
+            const dashboard = AdminDashboard.instance;
+            if (dashboard) {
+                await dashboard.loadStudents();
+                await dashboard.loadStatistics();
+            }
             this.showAlert('Student deleted successfully', 'success');
-            this.loadStudents();
         } catch (error) {
             this.showAlert(`Failed to delete: ${error.message}`, 'danger');
         }
@@ -1031,8 +1039,12 @@ class AdminDashboard {
         if (!confirm('Are you sure you want to delete this lecturer?')) return;
         try {
             await api.deleteLecturer(id);
+            const dashboard = AdminDashboard.instance;
+            if (dashboard) {
+                await dashboard.loadLecturers();
+                await dashboard.loadStatistics();
+            }
             this.showAlert('Lecturer deleted successfully', 'success');
-            this.loadLecturers();
         } catch (error) {
             this.showAlert(`Failed to delete: ${error.message}`, 'danger');
         }
@@ -1042,8 +1054,12 @@ class AdminDashboard {
         if (!confirm('Are you sure?')) return;
         try {
             await api.deleteProgram(id);
+            const dashboard = AdminDashboard.instance;
+            if (dashboard) {
+                await dashboard.loadPrograms();
+                await dashboard.loadStatistics();
+            }
             this.showAlert('Program deleted successfully', 'success');
-            this.loadPrograms();
         } catch (error) {
             this.showAlert(`Failed to delete: ${error.message}`, 'danger');
         }
@@ -1072,8 +1088,12 @@ class AdminDashboard {
         if (!confirm('Are you sure?')) return;
         try {
             await api.deleteUser(id);
+            const dashboard = AdminDashboard.instance;
+            if (dashboard) {
+                await dashboard.loadUsers();
+                await dashboard.loadStatistics();
+            }
             this.showAlert('User deleted successfully', 'success');
-            this.loadUsers();
         } catch (error) {
             this.showAlert(`Failed to delete: ${error.message}`, 'danger');
         }
