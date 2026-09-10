@@ -11,7 +11,6 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
-    FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://student-attendance-portal-gx6o.onrender.com').rstrip('/')
     
     # Upload folder
     UPLOAD_FOLDER = 'uploads'
@@ -39,7 +38,6 @@ class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///attendance_system.db')
-    FRONTEND_URL = os.getenv('FRONTEND_URL', '').rstrip('/')
 
 config = {
     'development': DevelopmentConfig,

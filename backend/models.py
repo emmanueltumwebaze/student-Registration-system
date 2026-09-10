@@ -5,7 +5,6 @@ from extensions import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from enum import Enum
-import hashlib
 
 class UserRole(Enum):
     """User roles"""
@@ -60,27 +59,6 @@ class User(db.Model):
             'must_change_password': self.must_change_password,
             'created_at': self.created_at.isoformat()
         }
-
-class ActivationToken(db.Model):
-    """One-time token used by a new user to choose their password."""
-    __tablename__ = 'activation_tokens'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
-    token_hash = db.Column(db.String(64), nullable=False, unique=True, index=True)
-    expires_at = db.Column(db.DateTime, nullable=False)
-    used_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    user = db.relationship('User', backref=db.backref('activation_token', uselist=False,
-                                                       cascade='all, delete-orphan'))
-
-    @staticmethod
-    def hash_token(token):
-        return hashlib.sha256(token.encode('utf-8')).hexdigest()
-
-    def is_valid(self):
-        return self.used_at is None and self.expires_at > datetime.utcnow()
 
 class Department(db.Model):
     """Department model"""
