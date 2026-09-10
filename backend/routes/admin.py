@@ -12,6 +12,13 @@ import secrets
 
 admin_bp = Blueprint('admin', __name__)
 
+def activation_url(token):
+    """Build an activation URL from the configured deployed frontend."""
+    frontend_url = current_app.config.get('FRONTEND_URL')
+    if not frontend_url:
+        raise RuntimeError('FRONTEND_URL is not configured')
+    return f'{frontend_url}/pages/set-password.html?token={token}'
+
 # ==================== Department Management ====================
 
 @admin_bp.route('/departments', methods=['GET'])
@@ -402,7 +409,7 @@ def register_student():
         token = create_activation_token(user)
         db.session.commit()
         
-        response_data['activation_url'] = current_app.config['FRONTEND_URL'] + '/pages/set-password.html?token=' + token
+        response_data['activation_url'] = activation_url(token)
         return ResponseHelper.success('Student registered. Send the activation link to the student.', response_data, 201)
     except Exception as e:
         db.session.rollback()
@@ -542,7 +549,7 @@ def register_lecturer():
         token = create_activation_token(user)
         db.session.commit()
         
-        response_data['activation_url'] = current_app.config['FRONTEND_URL'] + '/pages/set-password.html?token=' + token
+        response_data['activation_url'] = activation_url(token)
         return ResponseHelper.success('Lecturer registered', response_data, 201)
     except Exception as e:
         db.session.rollback()
