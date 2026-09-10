@@ -12,7 +12,8 @@
     <header>
         <nav class="container admin-nav">
             <div class="logo">📚 Attendance System</div>
-            <ul class="nav-links">
+            <button class="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="admin-nav-links" onclick="AdminDashboard.toggleMobileNav()">Menu</button>
+            <ul class="nav-links" id="admin-nav-links">
                 <li><a href="#" onclick="AdminDashboard.selectTab('dashboard')">Dashboard</a></li>
                 <li><a href="#" onclick="AdminDashboard.selectTab('departments')">Departments</a></li>
                 <li><a href="#" onclick="AdminDashboard.selectTab('programs')">Programs</a></li>

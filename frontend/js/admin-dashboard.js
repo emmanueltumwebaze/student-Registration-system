@@ -359,6 +359,12 @@ class AdminDashboard {
      * Select tab
      */
     static selectTab(tabName) {
+        const navLinks = document.getElementById('admin-nav-links');
+        const navToggle = document.querySelector('.mobile-nav-toggle');
+        if (navLinks && navToggle) {
+            navLinks.classList.remove('open');
+            navToggle.setAttribute('aria-expanded', 'false');
+        }
         // Hide all tabs
         document.querySelectorAll('.tab').forEach(tab => {
             tab.classList.remove('active');
@@ -366,6 +372,14 @@ class AdminDashboard {
 
         // Show selected tab
         document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+
+    static toggleMobileNav() {
+        const navLinks = document.getElementById('admin-nav-links');
+        const navToggle = document.querySelector('.mobile-nav-toggle');
+        if (!navLinks || !navToggle) return;
+        const isOpen = navLinks.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', String(isOpen));
     }
 
     /**

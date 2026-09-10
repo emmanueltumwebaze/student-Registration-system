@@ -16,6 +16,25 @@
     flex: 0 0 auto;
 }
 
+.mobile-nav-toggle {
+    display: none;
+    background: #2563eb;
+    color: white;
+    border: 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+section.tab {
+    min-width: 0;
+}
+
+section.tab > table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
 .tab {
     display: none;
 }
@@ -253,17 +272,92 @@ tbody tr:last-child td {
 
 /* Responsive */
 @media (max-width: 768px) {
+    .container {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    header {
+        position: relative;
+    }
+
+    .admin-nav {
+        padding: 12px 0;
+        gap: 10px;
+    }
+
+    .admin-nav .logo {
+        font-size: 17px;
+        flex: 1;
+    }
+
+    .mobile-nav-toggle {
+        display: inline-block;
+    }
+
+    .admin-nav .nav-links {
+        display: none;
+        flex: 0 0 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 6px 0;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .admin-nav .nav-links.open {
+        display: flex;
+    }
+
+    .admin-nav .nav-links a {
+        display: block;
+        padding: 10px 8px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .admin-nav .user-menu {
+        flex: 0 0 100%;
+        justify-content: space-between;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 8px;
+    }
+
+    main {
+        padding: 20px 0;
+    }
+
+    .tab-header {
+        align-items: stretch;
+    }
+
+    .tab-header h2 {
+        font-size: 22px;
+    }
+
+    .tab-header .btn,
+    .threshold-control .btn {
+        width: 100%;
+    }
+
     .tab-header {
         flex-direction: column;
-        align-items: flex-start;
         gap: 12px;
     }
 
     .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
     }
 
-    table {
+    .stat-card {
+        padding: 16px 8px;
+    }
+
+    .stat-value {
+        font-size: 26px;
+    }
+
+    section.tab > table {
         font-size: 12px;
     }
 
@@ -275,12 +369,36 @@ tbody tr:last-child td {
         flex-direction: column;
     }
 
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .threshold-control {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .threshold-control input {
+        width: 100% !important;
+    }
+
     .form-row {
         grid-template-columns: 1fr;
     }
 
     .modal-content {
         width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 18px;
+    }
+
+    .form-buttons {
+        flex-direction: column-reverse;
+    }
+
+    .form-buttons .btn {
+        width: 100%;
     }
 }
 
