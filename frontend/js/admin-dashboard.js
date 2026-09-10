@@ -513,7 +513,8 @@ class AdminDashboard {
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <p class="form-help">The student will create their password using a private activation link.</p>
+                            <label>Temporary Password *</label>
+                            <input type="password" id="password" minlength="6" required>
                         </div>
                         <div class="form-group">
                             <label>Student ID *</label>
@@ -568,7 +569,8 @@ class AdminDashboard {
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <p class="form-help">The lecturer will create their password using a private activation link.</p>
+                            <label>Temporary Password *</label>
+                            <input type="password" id="password" minlength="6" required>
                         </div>
                         <div class="form-group">
                             <label>Lecturer ID *</label>
@@ -821,16 +823,16 @@ class AdminDashboard {
             last_name: document.getElementById('last_name').value,
             email: document.getElementById('email').value,
             username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
             student_id: document.getElementById('student_id').value,
             program_id: parseInt(document.getElementById('program_id').value),
             department_id: parseInt(document.getElementById('department_id').value)
         };
 
         try {
-            const response = await api.registerStudent(data);
+            await api.registerStudent(data);
             this.closeModal();
-            window.prompt('Send this one-time activation link to the student:', response.data.activation_url);
-            this.showAlert('Student registered. The activation link is ready to send.', 'success');
+            this.showAlert('Student registered. They must change the temporary password at first login.', 'success');
         } catch (error) {
             this.showAlert(`Failed to register student: ${error.message}`, 'danger');
             return;
@@ -866,16 +868,16 @@ class AdminDashboard {
             last_name: document.getElementById('last_name').value,
             email: document.getElementById('email').value,
             username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
             lecturer_id: document.getElementById('lecturer_id').value,
             specialization: document.getElementById('specialization').value,
             department_id: parseInt(document.getElementById('department_id').value)
         };
 
         try {
-            const response = await api.registerLecturer(data);
+            await api.registerLecturer(data);
             this.closeModal();
-            window.prompt('Send this one-time activation link to the lecturer:', response.data.activation_url);
-            this.showAlert('Lecturer registered. The activation link is ready to send.', 'success');
+            this.showAlert('Lecturer registered. They must change the temporary password at first login.', 'success');
         } catch (error) {
             this.showAlert(`Failed to register lecturer: ${error.message}`, 'danger');
             return;

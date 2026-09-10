@@ -31,6 +31,7 @@ class User(db.Model):
     last_name = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='student')
     is_active = db.Column(db.Boolean, default=True, index=True)
+    must_change_password = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -56,6 +57,7 @@ class User(db.Model):
             'last_name': self.last_name,
             'role': self.role,
             'is_active': self.is_active,
+            'must_change_password': self.must_change_password,
             'created_at': self.created_at.isoformat()
         }
 

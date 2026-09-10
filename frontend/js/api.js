@@ -130,8 +130,8 @@ class API {
         });
     }
 
-    async activateAccount(token, password) {
-        return this.request(`/auth/activate/${encodeURIComponent(token)}`, {
+    async changePassword(password) {
+        return this.request('/auth/change-password', {
             method: 'POST',
             body: { password }
         });

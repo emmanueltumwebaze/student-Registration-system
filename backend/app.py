@@ -7,6 +7,7 @@ from flask_cors import CORS
 from extensions import db, jwt
 from dotenv import load_dotenv
 from datetime import timedelta
+from sqlalchemy import inspect, text
 
 # Load environment variables
 load_dotenv()
@@ -76,6 +77,14 @@ def create_app(config_name=None):
         
         # Create tables
         db.create_all()
+
+        # Add new user fields to an existing PostgreSQL/SQLite database.
+        user_columns = {column['name'] for column in inspect(db.engine).get_columns('users')}
+        if 'must_change_password' not in user_columns:
+            db.session.execute(text(
+                'ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT FALSE'
+            ))
+            db.session.commit()
     
     return app
 

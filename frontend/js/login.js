@@ -63,10 +63,13 @@ class LoginManager {
 
             this.showAlert('Login successful! Redirecting...', 'success');
 
-            // Redirect based on role strings
             setTimeout(() => {
                 const userRole = responseData.user ? responseData.user.role : 'admin';
-                this.redirectToDashboard(userRole);
+                if (responseData.must_change_password || responseData.user.must_change_password) {
+                    window.location.href = 'set-password.html';
+                } else {
+                    this.redirectToDashboard(userRole);
+                }
             }, 1000);
 
         } catch (error) {

@@ -193,12 +193,36 @@ def login():
                 'access_token': access_token,
                 'refresh_token': refresh_token,
                 'user': user_data,
+                'must_change_password': user.must_change_password,
                 'expires_in': 86400
             },
             200
         )
     except Exception as e:
         return ResponseHelper.error(f'Login failed: {str(e)}', 'LOGIN_ERROR', 500)
+
+@auth_bp.route('/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    """Replace a temporary password with the user's private password."""
+    data = request.get_json() or {}
+    password = data.get('password')
+    is_valid, password_msg = ValidationHelper.validate_password_strength(password or '')
+    if not is_valid:
+        return ResponseHelper.error(password_msg, 'WEAK_PASSWORD', 400)
+
+    user = User.query.get(get_jwt_identity())
+    if not user:
+        return ResponseHelper.error('User not found', 'USER_NOT_FOUND', 404)
+
+    try:
+        user.set_password(password)
+        user.must_change_password = False
+        db.session.commit()
+        return ResponseHelper.success('Password changed successfully', None, 200)
+    except Exception as e:
+        db.session.rollback()
+        return ResponseHelper.error(f'Password change failed: {str(e)}', 'PASSWORD_CHANGE_ERROR', 500)
 
 @auth_bp.route('/activate/<token>', methods=['POST'])
 def activate_account(token):

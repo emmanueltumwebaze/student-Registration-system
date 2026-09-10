@@ -6,18 +6,8 @@ from models import (User, Student, Lecturer, Department, Program, Course,
                    CourseLecturer, StudentCourse, Attendance, AttendanceWarning)
 from utils import ResponseHelper, ValidationHelper
 from datetime import datetime
-from routes.auth import create_activation_token
-from flask import current_app
-import secrets
 
 admin_bp = Blueprint('admin', __name__)
-
-def activation_url(token):
-    """Build an activation URL from the configured deployed frontend."""
-    frontend_url = current_app.config.get('FRONTEND_URL')
-    if not frontend_url:
-        raise RuntimeError('FRONTEND_URL is not configured')
-    return f'{frontend_url}/pages/set-password.html?token={token}'
 
 # ==================== Department Management ====================
 
@@ -360,7 +350,7 @@ def register_student():
     if not data:
         return ResponseHelper.error('No data provided', 'EMPTY_REQUEST', 400)
     
-    required = ['email', 'username', 'first_name', 'last_name', 'student_id', 'program_id', 'department_id']
+    required = ['email', 'username', 'password', 'first_name', 'last_name', 'student_id', 'program_id', 'department_id']
     missing = ValidationHelper.validate_required_fields(data, required)
     if missing:
         return ResponseHelper.error(f'Missing fields: {", ".join(missing)}', 'MISSING_FIELDS', 400)
@@ -376,6 +366,10 @@ def register_student():
         return ResponseHelper.error('Username already exists', 'USERNAME_EXISTS', 400)
     if Student.query.filter_by(student_id=data['student_id']).first():
         return ResponseHelper.error('Student ID already exists', 'ID_EXISTS', 400)
+
+    is_valid, msg = ValidationHelper.validate_password_strength(data['password'])
+    if not is_valid:
+        return ResponseHelper.error(msg, 'WEAK_PASSWORD', 400)
     
     # Verify program and department exist
     if not Program.query.get(data['program_id']):
@@ -392,7 +386,8 @@ def register_student():
             last_name=data['last_name'],
             role='student'
         )
-        user.set_password(secrets.token_urlsafe(32))
+        user.set_password(data['password'])
+        user.must_change_password = True
         db.session.add(user)
         db.session.flush()
         
@@ -406,11 +401,8 @@ def register_student():
         db.session.add(student)
         db.session.flush()
         response_data = student.to_dict()
-        token = create_activation_token(user)
         db.session.commit()
-        
-        response_data['activation_url'] = activation_url(token)
-        return ResponseHelper.success('Student registered. Send the activation link to the student.', response_data, 201)
+        return ResponseHelper.success('Student registered. The temporary password must be changed at first login.', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -495,7 +487,7 @@ def register_lecturer():
     if not data:
         return ResponseHelper.error('No data provided', 'EMPTY_REQUEST', 400)
     
-    required = ['email', 'username', 'first_name', 'last_name', 'lecturer_id', 'department_id']
+    required = ['email', 'username', 'password', 'first_name', 'last_name', 'lecturer_id', 'department_id']
     missing = ValidationHelper.validate_required_fields(data, required)
     if missing:
         return ResponseHelper.error(f'Missing fields: {", ".join(missing)}', 'MISSING_FIELDS', 400)
@@ -511,6 +503,10 @@ def register_lecturer():
         return ResponseHelper.error('Username already exists', 'USERNAME_EXISTS', 400)
     if Lecturer.query.filter_by(lecturer_id=data['lecturer_id']).first():
         return ResponseHelper.error('Lecturer ID already exists', 'ID_EXISTS', 400)
+
+    is_valid, msg = ValidationHelper.validate_password_strength(data['password'])
+    if not is_valid:
+        return ResponseHelper.error(msg, 'WEAK_PASSWORD', 400)
     
     # Verify department exists
     if not Department.query.get(data['department_id']):
@@ -525,7 +521,8 @@ def register_lecturer():
             last_name=data['last_name'],
             role='lecturer'
         )
-        user.set_password(secrets.token_urlsafe(32))
+        user.set_password(data['password'])
+        user.must_change_password = True
         db.session.add(user)
         db.session.flush()
         
@@ -546,11 +543,9 @@ def register_lecturer():
             'specialization': lecturer.specialization,
             'is_active': lecturer.is_active
         }
-        token = create_activation_token(user)
         db.session.commit()
         
-        response_data['activation_url'] = activation_url(token)
-        return ResponseHelper.success('Lecturer registered', response_data, 201)
+        return ResponseHelper.success('Lecturer registered. The temporary password must be changed at first login.', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)
