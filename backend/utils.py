@@ -6,46 +6,11 @@ from models import (Student, Lecturer, Attendance, AttendanceSession,
                    AttendanceWarning, StudentCourse, Course, User)
 from datetime import datetime, timedelta
 from flask import jsonify
-from flask import current_app
 import qrcode
 from io import BytesIO
 import base64
 import string
 import random
-import smtplib
-from email.message import EmailMessage
-
-
-def send_temporary_password_email(recipient, first_name, username, temporary_password, role):
-    """Send the one-time login password for a newly created account."""
-    required_settings = ['SMTP_HOST', 'SMTP_USERNAME', 'SMTP_PASSWORD', 'MAIL_FROM']
-    missing_settings = [setting for setting in required_settings if not current_app.config.get(setting)]
-    if missing_settings:
-        raise RuntimeError(
-            f"Email delivery is not configured. Missing: {', '.join(missing_settings)}"
-        )
-
-    message = EmailMessage()
-    message['Subject'] = 'Your Student Attendance System account'
-    message['From'] = current_app.config['MAIL_FROM']
-    message['To'] = recipient
-    message.set_content(
-        f"""Hello {first_name},
-
-Your {role} account for the Student Attendance System has been created.
-
-Username: {username}
-Temporary password: {temporary_password}
-Login: {current_app.config['FRONTEND_LOGIN_URL']}
-
-Use this temporary password to log in, then choose a new password when prompted."""
-    )
-
-    with smtplib.SMTP(current_app.config['SMTP_HOST'], current_app.config['SMTP_PORT']) as smtp:
-        if current_app.config['SMTP_USE_TLS']:
-            smtp.starttls()
-        smtp.login(current_app.config['SMTP_USERNAME'], current_app.config['SMTP_PASSWORD'])
-        smtp.send_message(message)
 
 class AttendanceCalculator:
     """Helper class for attendance calculations"""

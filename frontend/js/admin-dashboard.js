@@ -527,7 +527,7 @@ class AdminDashboard {
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <p class="form-help">Temporary login details will be sent to this email.</p>
+                            <p class="form-help">A temporary password will be shown after registration.</p>
                         </div>
                         <div class="form-group">
                             <label>Student ID *</label>
@@ -582,7 +582,7 @@ class AdminDashboard {
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <p class="form-help">Temporary login details will be sent to this email.</p>
+                            <p class="form-help">A temporary password will be shown after registration.</p>
                         </div>
                         <div class="form-group">
                             <label>Lecturer ID *</label>
@@ -843,7 +843,8 @@ class AdminDashboard {
         try {
             const response = await api.registerStudent(data);
             this.closeModal();
-            this.showAlert('Student registered. Temporary login details were sent to the submitted email address.', 'success');
+            window.prompt('Give this temporary password to the student. It must be changed at first login:', response.data.temporary_password);
+            this.showAlert('Student registered with a temporary password.', 'success');
         } catch (error) {
             this.showAlert(`Failed to register student: ${error.message}`, 'danger');
             return;
@@ -887,7 +888,8 @@ class AdminDashboard {
         try {
             const response = await api.registerLecturer(data);
             this.closeModal();
-            this.showAlert('Lecturer registered. Temporary login details were sent to the submitted email address.', 'success');
+            window.prompt('Give this temporary password to the lecturer. It must be changed at first login:', response.data.temporary_password);
+            this.showAlert('Lecturer registered with a temporary password.', 'success');
         } catch (error) {
             this.showAlert(`Failed to register lecturer: ${error.message}`, 'danger');
             return;
