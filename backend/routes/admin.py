@@ -4,7 +4,7 @@ from routes.auth import admin_required
 from app import db
 from models import (User, Student, Lecturer, Department, Program, Course, 
                    CourseLecturer, StudentCourse, Attendance, AttendanceWarning)
-from utils import ResponseHelper, ValidationHelper
+from utils import ResponseHelper, ValidationHelper, send_temporary_password_email
 from datetime import datetime
 import secrets
 
@@ -398,10 +398,12 @@ def register_student():
         )
         db.session.add(student)
         db.session.flush()
+        send_temporary_password_email(
+            user.email, user.first_name, user.username, temporary_password, 'student'
+        )
         response_data = student.to_dict()
-        response_data['temporary_password'] = temporary_password
         db.session.commit()
-        return ResponseHelper.success('Student registered. Give the temporary password to the student.', response_data, 201)
+        return ResponseHelper.success('Student registered. Temporary login details were sent by email.', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -531,6 +533,9 @@ def register_lecturer():
         )
         db.session.add(lecturer)
         db.session.flush()
+        send_temporary_password_email(
+            user.email, user.first_name, user.username, temporary_password, 'lecturer'
+        )
         response_data = {
             'id': lecturer.id,
             'user_id': user.id,
@@ -539,10 +544,9 @@ def register_lecturer():
             'specialization': lecturer.specialization,
             'is_active': lecturer.is_active
         }
-        response_data['temporary_password'] = temporary_password
         db.session.commit()
         
-        return ResponseHelper.success('Lecturer registered. Give the temporary password to the lecturer.', response_data, 201)
+        return ResponseHelper.success('Lecturer registered. Temporary login details were sent by email.', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)
