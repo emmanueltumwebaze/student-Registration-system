@@ -63,14 +63,12 @@ class LoginManager {
 
             this.showAlert('Login successful! Redirecting...', 'success');
 
-            setTimeout(() => {
-                const userRole = responseData.user ? responseData.user.role : 'admin';
-                if (responseData.must_change_password || responseData.user.must_change_password) {
-                    window.location.href = 'set-password.html';
-                } else {
-                    this.redirectToDashboard(userRole);
-                }
-            }, 1000);
+            const userRole = responseData.user ? responseData.user.role : 'admin';
+            if (responseData.must_change_password || responseData.user.must_change_password) {
+                window.location.href = 'set-password.html';
+            } else {
+                this.redirectToDashboard(userRole);
+            }
 
         } catch (error) {
             this.showLoading(false);
