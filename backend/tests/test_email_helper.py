@@ -1,6 +1,22 @@
 import os
 
+from app import create_app
+from extensions import db
+from models import User, Department, Program
 from utils import EmailHelper
+
+
+def test_default_seed_creates_admin_department_and_program():
+    app = create_app('testing')
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        from app import seed_default_data
+        seed_default_data()
+
+        assert User.query.filter_by(email='admin@university.edu').first() is not None
+        assert Department.query.filter_by(code='CS').first() is not None
+        assert Program.query.filter_by(code='BCS').first() is not None
 
 
 def test_generate_temporary_password_has_expected_length():

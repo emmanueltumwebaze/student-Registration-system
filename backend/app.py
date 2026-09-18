@@ -15,6 +15,48 @@ load_dotenv()
 # Initialize extensions (must be before importing models)
 
 
+def seed_default_data():
+    """Create the minimum required default records for a fresh database."""
+    from models import User, Department, Program
+
+    admin = User.query.filter_by(email='admin@university.edu').first()
+    if not admin:
+        admin = User(
+            email='admin@university.edu',
+            username='admin',
+            first_name='System',
+            last_name='Admin',
+            role='admin'
+        )
+        admin.set_password('Admin123')
+        admin.is_active = True
+        db.session.add(admin)
+        db.session.flush()
+
+    department = Department.query.filter_by(code='CS').first()
+    if not department:
+        department = Department(
+            name='Computer Science',
+            code='CS',
+            description='Default department for newly created accounts'
+        )
+        db.session.add(department)
+        db.session.flush()
+
+    program = Program.query.filter_by(code='BCS').first()
+    if not program:
+        program = Program(
+            name='Bachelor of Computer Science',
+            code='BCS',
+            department_id=department.id,
+            duration_years=4,
+            description='Default program used for registration tests and setup'
+        )
+        db.session.add(program)
+
+    db.session.commit()
+
+
 def create_app(config_name=None):
     """Application factory function"""
     app = Flask(__name__)
@@ -85,6 +127,8 @@ def create_app(config_name=None):
                 'ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT FALSE'
             ))
             db.session.commit()
+
+        seed_default_data()
     
     return app
 
