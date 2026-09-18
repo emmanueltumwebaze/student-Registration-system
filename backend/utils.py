@@ -303,7 +303,7 @@ class EmailHelper:
                 msg['To'] = to_email
                 msg.set_content(body)
 
-                with smtplib.SMTP(smtp_host, int(smtp_port)) as server:
+                with smtplib.SMTP(smtp_host, int(smtp_port), timeout=10) as server:
                     server.starttls()
                     server.login(smtp_username, smtp_password)
                     server.send_message(msg)

@@ -6,8 +6,18 @@ from models import (User, Student, Lecturer, Department, Program, Course,
                    CourseLecturer, StudentCourse, Attendance, AttendanceWarning)
 from utils import ResponseHelper, ValidationHelper, EmailHelper
 from datetime import datetime
+from threading import Thread
 
 admin_bp = Blueprint('admin', __name__)
+
+
+def send_temporary_password_email_async(email, first_name, last_name, password, role):
+    """Send registration email without delaying the registration response."""
+    Thread(
+        target=EmailHelper.send_temporary_password_email,
+        args=(email, first_name, last_name, password, role),
+        daemon=True
+    ).start()
 
 # ==================== Department Management ====================
 
@@ -396,19 +406,12 @@ def register_student():
         db.session.add(student)
         db.session.flush()
 
-        email_result = EmailHelper.send_temporary_password_email(
-            user.email,
-            user.first_name,
-            user.last_name,
-            temporary_password,
-            'student'
-        )
-        if not email_result.get('success'):
-            raise RuntimeError('Failed to send temporary password email')
-
         response_data = student.to_dict()
         db.session.commit()
-        return ResponseHelper.success('Student registered. A temporary password has been sent to the student email.', response_data, 201)
+        send_temporary_password_email_async(
+            user.email, user.first_name, user.last_name, temporary_password, 'student'
+        )
+        return ResponseHelper.success('Student registered. The temporary password email is being sent.', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)
@@ -537,16 +540,6 @@ def register_lecturer():
         db.session.add(lecturer)
         db.session.flush()
 
-        email_result = EmailHelper.send_temporary_password_email(
-            user.email,
-            user.first_name,
-            user.last_name,
-            temporary_password,
-            'lecturer'
-        )
-        if not email_result.get('success'):
-            raise RuntimeError('Failed to send temporary password email')
-
         response_data = {
             'id': lecturer.id,
             'user_id': user.id,
@@ -556,8 +549,11 @@ def register_lecturer():
             'is_active': lecturer.is_active
         }
         db.session.commit()
+        send_temporary_password_email_async(
+            user.email, user.first_name, user.last_name, temporary_password, 'lecturer'
+        )
 
-        return ResponseHelper.success('Lecturer registered. A temporary password has been sent to the lecturer email.', response_data, 201)
+        return ResponseHelper.success('Lecturer registered. The temporary password email is being sent.', response_data, 201)
     except Exception as e:
         db.session.rollback()
         return ResponseHelper.error(f'Registration failed: {str(e)}', 'CREATE_ERROR', 500)

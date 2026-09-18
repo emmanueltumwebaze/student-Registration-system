@@ -715,7 +715,10 @@ class AdminDashboard {
         if (form.dataset.submitting === 'true') return;
         form.dataset.submitting = 'true';
         const submitButton = form.querySelector('button[type="submit"]');
-        if (submitButton) submitButton.disabled = true;
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Registering...';
+        }
         const data = {
             name: document.getElementById('name').value,
             code: document.getElementById('code').value,
@@ -731,7 +734,10 @@ class AdminDashboard {
             return;
         } finally {
             form.dataset.submitting = 'false';
-            if (submitButton) submitButton.disabled = false;
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Register Student';
+            }
         }
 
         const dashboard = AdminDashboard.instance;
@@ -873,6 +879,7 @@ class AdminDashboard {
         const submitButton = form.querySelector('button[type="submit"]');
         if (submitButton) {
             submitButton.disabled = true;
+            submitButton.textContent = 'Registering...';
         }
         const data = {
             first_name: document.getElementById('first_name').value,
@@ -895,6 +902,7 @@ class AdminDashboard {
             form.dataset.submitting = 'false';
             if (submitButton) {
                 submitButton.disabled = false;
+                submitButton.textContent = 'Register Lecturer';
             }
         }
 
