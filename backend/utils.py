@@ -2,8 +2,7 @@
 Utility functions for the attendance system
 """
 from app import db
-from models import (Student, Lecturer, Attendance, AttendanceSession, 
-                   AttendanceWarning, StudentCourse, Course, User)
+from models import (Student, Lecturer, Attendance, AttendanceSession, AttendanceWarning, StudentCourse, Course, User)
 from datetime import datetime, timedelta
 from flask import jsonify
 import qrcode
@@ -11,26 +10,23 @@ from io import BytesIO
 import base64
 import string
 import random
-import os
-import smtplib
 import secrets
 from email.message import EmailMessage
+import os
+import requests
+from flask import current_app
 
 class AttendanceCalculator:
     """Helper class for attendance calculations"""
-    
     @staticmethod
     def calculate_attendance_percentage(student_id, course_id):
         """Calculate attendance percentage for student in course"""
         # Get all attendance sessions for the course
         sessions = AttendanceSession.query.filter_by(course_id=course_id).all()
-        
         if not sessions:
             return 0
-        
         total_sessions = len(sessions)
         present_count = 0
-        
         for session in sessions:
             attendance = Attendance.query.filter_by(
                 session_id=session.id,
@@ -39,15 +35,12 @@ class AttendanceCalculator:
             ).first()
             if attendance:
                 present_count += 1
-        
         percentage = (present_count / total_sessions * 100) if total_sessions > 0 else 0
         return round(percentage, 2)
-    
     @staticmethod
     def get_student_attendance_summary(student_id):
         """Get attendance summary for a student across all courses"""
         courses = StudentCourse.query.filter_by(student_id=student_id, is_active=True).all()
-        
         summary = []
         for enrollment in courses:
             course = Course.query.get(enrollment.course_id)
@@ -61,14 +54,11 @@ class AttendanceCalculator:
                     'course_name': course.name,
                     'attendance_percentage': percentage
                 })
-        
         return summary
-    
     @staticmethod
     def get_course_attendance_summary(course_id):
         """Get attendance summary for all students in a course"""
         enrollments = StudentCourse.query.filter_by(course_id=course_id, is_active=True).all()
-        
         summary = []
         for enrollment in enrollments:
             student = Student.query.get(enrollment.student_id)
@@ -82,36 +72,31 @@ class AttendanceCalculator:
                     'student_name': f"{student.user.first_name} {student.user.last_name}",
                     'attendance_percentage': percentage
                 })
-        
         return sorted(summary, key=lambda x: x['attendance_percentage'])
-    
     @staticmethod
     def identify_low_attendance_students(course_id, threshold=75):
         """Identify students with attendance below threshold"""
         summary = AttendanceCalculator.get_course_attendance_summary(course_id)
         low_attendance = [s for s in summary if s['attendance_percentage'] < threshold]
         return low_attendance
-    
+
     @staticmethod
     def create_attendance_warnings(threshold=75, critical_threshold=50):
         """Create attendance warnings for all students"""
         # Get all active courses
         courses = Course.query.filter_by(is_active=True).all()
         warnings_created = 0
-        
+
         for course in courses:
             students = AttendanceCalculator.get_course_attendance_summary(course.id)
-            
             for student_data in students:
                 student_id = student_data['student_id']
                 percentage = student_data['attendance_percentage']
-                
                 # Delete old warning for this student-course
                 AttendanceWarning.query.filter_by(
                     student_id=student_id,
                     course_id=course.id
                 ).delete()
-                
                 # Create new warning if needed
                 if percentage < critical_threshold:
                     warning = AttendanceWarning(
@@ -265,94 +250,69 @@ class EmailHelper:
 
     @staticmethod
     def generate_temporary_password(length=12):
-        """Create a temporary password with uppercase, lowercase, numbers."""
+        """Generate a temporary password that includes letters and digits."""
         alphabet = string.ascii_letters + string.digits
         while True:
-            password = ''.join(secrets.choice(alphabet) for _ in range(length))
-            if (
-                any(c.isupper() for c in password)
-                and any(c.islower() for c in password)
-                and any(c.isdigit() for c in password)
-            ):
-                return password
+            pwd = ''.join(secrets.choice(alphabet) for _ in range(length))
+            if any(c.isupper() for c in pwd) and any(c.islower() for c in pwd) and any(c.isdigit() for c in pwd):
+                return pwd
 
     @staticmethod
-    def send_temporary_password_email(to_email, first_name, last_name, temporary_password, role='student'):
-        """Send a temporary password to the registered email address."""
-        role_label = role.capitalize()
-        subject = f'Your {role_label} temporary password'
-        body = (
-            f"Hello {first_name} {last_name},\n\n"
-            f"Your {role_label.lower()} account has been created successfully.\n"
-            f"Temporary password: {temporary_password}\n\n"
-            "Please log in and change this password immediately.\n\n"
-            "Regards,\nStudent Attendance System"
-        )
+    def send_temporary_password_email(to_email, first_name, last_name, temporary_password, role="student"):
+        """Send a temporary password, falling back to console logging when SMTP is unset."""
+        api_key = os.getenv("BREVO_API_KEY")
+        sender_email = os.getenv("BREVO_SENDER_EMAIL")
 
-        smtp_host = os.getenv('SMTP_HOST')
-        smtp_port = os.getenv('SMTP_PORT', '587')
-        smtp_username = os.getenv('SMTP_USERNAME')
-        smtp_password = os.getenv('SMTP_PASSWORD')
-        smtp_from = os.getenv('SMTP_FROM_EMAIL') or smtp_username
-        smtp_email_tls = os.getenv('SMTP_EMAIL_TLS', 'true').strip().lower() in {
-            '1', 'true', 'yes', 'on'
+        if not api_key or not sender_email:
+            print(f"BREVO keys missing. Console fallback for {to_email}.")
+            return {
+                "success": True,
+                "method": "console",
+                "message": f"Temporary password for {first_name} {last_name}: {temporary_password}"
+            }
+
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {"api-key": api_key, "Content-Type": "application/json"}
+
+        html = f"""
+        <h2>Hello {first_name} {last_name},</h2>
+        <p>Your {role} account has been created.</p>
+        <p><b>Email:</b> {to_email}</p>
+        <p><b>Temporary Password:</b> <span style="background:#eee;padding:8px;font-size:18px;">{temporary_password}</span></p>
+        <p>Login: https://student-attendance-portal-gx6o.onrender.com</p>
+        <p>Please change password after login.</p>
+        """
+
+        payload = {
+            "sender": {"email": sender_email, "name": "Student Portal"},
+            "to": [{"email": to_email}],
+            "subject": "Your Temporary Password",
+            "htmlContent": html
         }
 
-        if smtp_host and smtp_username and smtp_password and smtp_from:
-            try:
-                msg = EmailMessage()
-                msg['Subject'] = subject
-                msg['From'] = smtp_from
-                msg['To'] = to_email
-                msg.set_content(body)
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=15)
+            print(f"Brevo: {response.status_code} {response.text}")
+            if response.status_code in [200, 201]:
+                return {"success": True, "method": "smtp", "status": "sent"}
+            return {"success": False, "method": "failed", "error": response.text}
+        except Exception as exc:
+            print(f"Brevo error: {exc}")
+            return {"success": False, "method": "failed", "error": str(exc)}
 
-                smtp_port = int(smtp_port)
-                smtp_client = (
-                    smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
-                    if smtp_port == 465
-                    else smtplib.SMTP(smtp_host, smtp_port, timeout=10)
-                )
-                with smtp_client as server:
-                    if smtp_email_tls and smtp_port != 465:
-                        server.starttls()
-                    server.login(smtp_username, smtp_password)
-                    server.send_message(msg)
-
-                print(f"Temporary password email sent to {to_email} via {smtp_host}")
-                return {'success': True, 'method': 'smtp', 'recipient': to_email}
-            except Exception as exc:
-                print(f"SMTP email failed for {to_email}: {type(exc).__name__}: {exc}")
-        else:
-            print(
-                "SMTP is not configured; temporary password email was not sent. "
-                "Set SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, "
-                "and SMTP_FROM_EMAIL in Render environment variables."
-            )
-
-        print(
-            f"Temporary password email was not delivered to {to_email}. "
-            "Configure SMTP settings to send it securely."
-        )
-        return {'success': True, 'method': 'console', 'recipient': to_email}
 
 class ReportGenerator:
-    """Helper class for generating reports"""
-    
+    """Helper class for generating attendance reports."""
+
     @staticmethod
-    def generate_attendance_report(course_id, start_date=None, end_date=None):
-        """Generate attendance report for a course"""
-        if start_date is None:
-            start_date = datetime.utcnow().date() - timedelta(days=30)
-        if end_date is None:
-            end_date = datetime.utcnow().date()
-        
-        # Get all sessions in date range
+    def get_session_in_date_range(course_id, start_date, end_date):
+        """Get all sessions for a course within a date range."""
         sessions = AttendanceSession.query.filter(
             AttendanceSession.course_id == course_id,
             AttendanceSession.session_date >= start_date,
             AttendanceSession.session_date <= end_date
         ).all()
-        
+
         report = {
             'course_id': course_id,
             'course': Course.query.get(course_id).to_dict() if course_id else None,
@@ -364,51 +324,108 @@ class ReportGenerator:
             'sessions': [],
             'summary': {}
         }
-        
+
         for session in sessions:
             attendance_records = Attendance.query.filter_by(session_id=session.id).all()
             session_data = session.to_dict()
             session_data['attendance_count'] = len(attendance_records)
             session_data['present_count'] = len([a for a in attendance_records if a.status == 'present'])
             report['sessions'].append(session_data)
-        
+
+        if sessions:
+            report['summary'] = {
+                'total_attendance_records': sum(len(Attendance.query.filter_by(session_id=session.id).all()) for session in sessions),
+                'present_records': sum(
+                    len([a for a in Attendance.query.filter_by(session_id=session.id).all() if a.status == 'present'])
+                    for session in sessions
+                )
+            }
+
         return report
-    
+
+    @staticmethod
+    def generate_attendance_report(course_id, start_date=None, end_date=None):
+        """Generate a detailed attendance report for a course."""
+        course = Course.query.get(course_id)
+        if not course:
+            return None
+
+        query = AttendanceSession.query.filter_by(course_id=course_id)
+        if start_date is not None:
+            query = query.filter(AttendanceSession.session_date >= start_date)
+        if end_date is not None:
+            query = query.filter(AttendanceSession.session_date <= end_date)
+
+        sessions = query.order_by(AttendanceSession.session_date.asc()).all()
+        student_ids = [row.student_id for row in StudentCourse.query.filter_by(course_id=course_id, is_active=True).all()]
+
+        report = {
+            'course_id': course.id,
+            'course_name': course.name,
+            'course_code': course.code,
+            'date_range': {
+                'start': start_date.isoformat() if start_date else None,
+                'end': end_date.isoformat() if end_date else None,
+            },
+            'total_sessions': len(sessions),
+            'sessions': [],
+            'students': []
+        }
+
+        for session in sessions:
+            attendance_records = Attendance.query.filter_by(session_id=session.id).all()
+            session_data = session.to_dict()
+            session_data['attendance_count'] = len(attendance_records)
+            session_data['present_count'] = len([record for record in attendance_records if record.status == 'present'])
+            report['sessions'].append(session_data)
+
+        for student_id in sorted(set(student_ids)):
+            student = Student.query.get(student_id)
+            if not student or not student.user:
+                continue
+            percentage = AttendanceCalculator.calculate_attendance_percentage(student_id, course_id)
+            report['students'].append({
+                'student_id': student.id,
+                'student_number': student.student_id,
+                'student_name': f"{student.user.first_name} {student.user.last_name}",
+                'attendance_percentage': percentage,
+            })
+
+        report['students'] = sorted(report['students'], key=lambda s: s['attendance_percentage'])
+        return report
+
     @staticmethod
     def generate_student_report(student_id):
-        """Generate comprehensive attendance report for a student"""
+        """Generate a full attendance report for a single student."""
         student = Student.query.get(student_id)
         if not student:
             return None
-        
+
         report = {
             'student_id': student.student_id,
             'student_name': f"{student.user.first_name} {student.user.last_name}",
             'courses': [],
             'overall_attendance': 0
         }
-        
-        # Get all enrolled courses
+
         enrollments = StudentCourse.query.filter_by(student_id=student_id, is_active=True).all()
-        
         total_percentage = 0
         for enrollment in enrollments:
             course = Course.query.get(enrollment.course_id)
             if course:
-                percentage = AttendanceCalculator.calculate_attendance_percentage(
-                    student_id, course.id
-                )
+                percentage = AttendanceCalculator.calculate_attendance_percentage(student_id, course.id)
                 report['courses'].append({
                     'course_code': course.code,
                     'course_name': course.name,
                     'attendance_percentage': percentage
                 })
                 total_percentage += percentage
-        
+
         if report['courses']:
             report['overall_attendance'] = round(total_percentage / len(report['courses']), 2)
-        
+
         return report
+
 
 # Export all helper classes
 __all__ = [
