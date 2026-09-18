@@ -68,10 +68,16 @@ def create_app(config_name=None):
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(
+        app,
+        resources={r"/api/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Type", "Authorization"],
+        }}
+    )
 
-    
-    
     # Create upload folder if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
