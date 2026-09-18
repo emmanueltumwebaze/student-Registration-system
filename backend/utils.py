@@ -11,6 +11,10 @@ from io import BytesIO
 import base64
 import string
 import random
+import os
+import smtplib
+import secrets
+from email.message import EmailMessage
 
 class AttendanceCalculator:
     """Helper class for attendance calculations"""
@@ -256,6 +260,61 @@ class ValidationHelper:
             return False, "Password must be at least 6 characters"
         return True, "Password is valid"
 
+class EmailHelper:
+    """Helper class for sending temporary passwords via email."""
+
+    @staticmethod
+    def generate_temporary_password(length=12):
+        """Create a temporary password with uppercase, lowercase, numbers."""
+        alphabet = string.ascii_letters + string.digits
+        while True:
+            password = ''.join(secrets.choice(alphabet) for _ in range(length))
+            if (
+                any(c.isupper() for c in password)
+                and any(c.islower() for c in password)
+                and any(c.isdigit() for c in password)
+            ):
+                return password
+
+    @staticmethod
+    def send_temporary_password_email(to_email, first_name, last_name, temporary_password, role='student'):
+        """Send a temporary password to the registered email address."""
+        role_label = role.capitalize()
+        subject = f'Your {role_label} temporary password'
+        body = (
+            f"Hello {first_name} {last_name},\n\n"
+            f"Your {role_label.lower()} account has been created successfully.\n"
+            f"Temporary password: {temporary_password}\n\n"
+            "Please log in and change this password immediately.\n\n"
+            "Regards,\nStudent Attendance System"
+        )
+
+        smtp_host = os.getenv('SMTP_HOST')
+        smtp_port = os.getenv('SMTP_PORT', '587')
+        smtp_username = os.getenv('SMTP_USERNAME')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+        smtp_from = os.getenv('SMTP_FROM_EMAIL') or smtp_username
+
+        if smtp_host and smtp_username and smtp_password and smtp_from:
+            try:
+                msg = EmailMessage()
+                msg['Subject'] = subject
+                msg['From'] = smtp_from
+                msg['To'] = to_email
+                msg.set_content(body)
+
+                with smtplib.SMTP(smtp_host, int(smtp_port)) as server:
+                    server.starttls()
+                    server.login(smtp_username, smtp_password)
+                    server.send_message(msg)
+
+                return {'success': True, 'method': 'smtp', 'recipient': to_email}
+            except Exception as exc:
+                print(f"SMTP email failed for {to_email}: {exc}")
+
+        print(f"Temporary password email fallback for {to_email}:\n{body}")
+        return {'success': True, 'method': 'console', 'recipient': to_email}
+
 class ReportGenerator:
     """Helper class for generating reports"""
     
@@ -339,5 +398,6 @@ __all__ = [
     'ResponseHelper',
     'DateTimeHelper',
     'ValidationHelper',
+    'EmailHelper',
     'ReportGenerator'
 ]

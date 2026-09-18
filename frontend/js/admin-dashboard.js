@@ -841,10 +841,9 @@ class AdminDashboard {
         };
 
         try {
-            const response = await api.registerStudent(data);
+            await api.registerStudent(data);
             this.closeModal();
-            window.prompt('Give this temporary password to the student. It must be changed at first login:', response.data.temporary_password);
-            this.showAlert('Student registered with a temporary password.', 'success');
+            this.showAlert('Student registered successfully. A temporary password has been sent to the student email.', 'success');
         } catch (error) {
             this.showAlert(`Failed to register student: ${error.message}`, 'danger');
             return;
@@ -886,10 +885,9 @@ class AdminDashboard {
         };
 
         try {
-            const response = await api.registerLecturer(data);
+            await api.registerLecturer(data);
             this.closeModal();
-            window.prompt('Give this temporary password to the lecturer. It must be changed at first login:', response.data.temporary_password);
-            this.showAlert('Lecturer registered with a temporary password.', 'success');
+            this.showAlert('Lecturer registered successfully. A temporary password has been sent to the lecturer email.', 'success');
         } catch (error) {
             this.showAlert(`Failed to register lecturer: ${error.message}`, 'danger');
             return;
