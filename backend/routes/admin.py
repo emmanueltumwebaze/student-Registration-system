@@ -13,11 +13,14 @@ admin_bp = Blueprint('admin', __name__)
 
 def send_temporary_password_email_async(email, first_name, last_name, password, role):
     """Send registration email without delaying the registration response."""
-    Thread(
-        target=EmailHelper.send_temporary_password_email,
-        args=(email, first_name, last_name, password, role),
-        daemon=True
-    ).start()
+    def send_email():
+        result = EmailHelper.send_temporary_password_email(
+            email, first_name, last_name, password, role
+        )
+        if result.get('method') != 'smtp':
+            print(f"Temporary password email was not delivered to {email}.")
+
+    Thread(target=send_email, daemon=True).start()
 
 # ==================== Department Management ====================
 

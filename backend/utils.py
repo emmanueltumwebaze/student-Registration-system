@@ -294,6 +294,9 @@ class EmailHelper:
         smtp_username = os.getenv('SMTP_USERNAME')
         smtp_password = os.getenv('SMTP_PASSWORD')
         smtp_from = os.getenv('SMTP_FROM_EMAIL') or smtp_username
+        smtp_email_tls = os.getenv('SMTP_EMAIL_TLS', 'true').strip().lower() in {
+            '1', 'true', 'yes', 'on'
+        }
 
         if smtp_host and smtp_username and smtp_password and smtp_from:
             try:
@@ -303,16 +306,33 @@ class EmailHelper:
                 msg['To'] = to_email
                 msg.set_content(body)
 
-                with smtplib.SMTP(smtp_host, int(smtp_port), timeout=10) as server:
-                    server.starttls()
+                smtp_port = int(smtp_port)
+                smtp_client = (
+                    smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+                    if smtp_port == 465
+                    else smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+                )
+                with smtp_client as server:
+                    if smtp_email_tls and smtp_port != 465:
+                        server.starttls()
                     server.login(smtp_username, smtp_password)
                     server.send_message(msg)
 
+                print(f"Temporary password email sent to {to_email} via {smtp_host}")
                 return {'success': True, 'method': 'smtp', 'recipient': to_email}
             except Exception as exc:
-                print(f"SMTP email failed for {to_email}: {exc}")
+                print(f"SMTP email failed for {to_email}: {type(exc).__name__}: {exc}")
+        else:
+            print(
+                "SMTP is not configured; temporary password email was not sent. "
+                "Set SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, "
+                "and SMTP_FROM_EMAIL in Render environment variables."
+            )
 
-        print(f"Temporary password email fallback for {to_email}:\n{body}")
+        print(
+            f"Temporary password email was not delivered to {to_email}. "
+            "Configure SMTP settings to send it securely."
+        )
         return {'success': True, 'method': 'console', 'recipient': to_email}
 
 class ReportGenerator:
