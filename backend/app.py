@@ -64,7 +64,12 @@ def create_app(config_name=None):
     # Load configuration
     from config import config
     app.config.from_object(config[config_name or os.getenv('FLASK_ENV', 'development')])
-    
+
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 280,
+        "connect_args": {"keepalives": 1, "keepalives_idle": 30}
+    }
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)

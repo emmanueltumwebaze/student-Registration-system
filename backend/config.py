@@ -37,7 +37,14 @@ class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///attendance_system.db')
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        'DATABASE_URL',
+        'sqlite:///attendance_system.db'
+    ).replace('postgres://', 'postgresql://', 1)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
 
 config = {
     'development': DevelopmentConfig,
