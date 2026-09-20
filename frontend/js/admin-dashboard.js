@@ -9,6 +9,7 @@ class AdminDashboard {
         this.currentEditId = null;
         this.currentEditType = null;
         this.modal = document.getElementById('modal');
+        this.refreshInterval = null;
         this.checkAuth();
         this.init();
     }
@@ -44,6 +45,7 @@ class AdminDashboard {
         AdminDashboard.populateSelects();
         AdminDashboard.populateReportSelects();
         AdminDashboard.loadAnalytics();
+        this.startAutoRefresh();
 
         // Set user name
         const user = JSON.parse(localStorage.getItem('user'));
@@ -51,6 +53,34 @@ class AdminDashboard {
 
         // Set initial tab
         this.selectTab('dashboard');
+    }
+
+    startAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+        }
+
+        this.refreshInterval = setInterval(() => {
+            this.loadStatistics();
+            this.loadDepartments(true);
+            this.loadPrograms(true);
+            this.loadCourses();
+            this.loadStudents(true);
+            this.loadLecturers(true);
+            this.loadAssignments();
+            this.loadEnrollments();
+            this.loadUsers();
+            AdminDashboard.populateSelects();
+            AdminDashboard.populateReportSelects();
+            AdminDashboard.loadAnalytics();
+        }, 20000);
+    }
+
+    stopAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+            this.refreshInterval = null;
+        }
     }
 
     /**

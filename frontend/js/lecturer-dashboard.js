@@ -10,7 +10,9 @@ class LecturerDashboard {
         this.courses = [];
         this.sessions = [];
         this.currentSession = null;
-        
+        this.refreshInterval = null;
+
+        window.addEventListener('beforeunload', () => this.stopAutoRefresh());
         this.init();
     }
 
@@ -50,6 +52,7 @@ class LecturerDashboard {
                 this.updateUserInfo();
                 this.setupEventListeners();
                 await this.loadData();
+                this.startAutoRefresh();
             } else {
                 this.showError('Failed to load user profile');
             }
@@ -109,6 +112,25 @@ class LecturerDashboard {
                 this.closeQRModal();
             }
         });
+    }
+
+    startAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+        }
+
+        this.refreshInterval = setInterval(() => {
+            this.loadData().catch((error) => {
+                console.error('Auto-refresh failed:', error);
+            });
+        }, 15000);
+    }
+
+    stopAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+            this.refreshInterval = null;
+        }
     }
 
     async loadData() {
